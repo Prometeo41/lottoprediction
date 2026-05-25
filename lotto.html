@@ -133,6 +133,30 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
   <span style="font-family:monospace;font-size:8px;color:#444460;letter-spacing:1px">SOLO USO STATISTICO &mdash; IL LOTTO E UN GIOCO D AZZARDO &mdash; GIOCA RESPONSABILMENTE</span>
 </div>
 <script>
+
+// ── FUNZIONI PREMIUM (definite subito per evitare errori) ─────────────────
+function isPremium(){return localStorage.getItem('lotto_premium')==='YES';}
+function premiumBadge(){
+  return isPremium()
+    ? '<span style="background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:9px;font-weight:700;margin-left:6px">PREMIUM</span>'
+    : '<span style="background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.3);color:#e63946;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:9px;font-weight:700;margin-left:6px;cursor:pointer" onclick="showPaywall()">FREE</span>';
+}
+function getPayPalURL(){
+  return 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick'
+    +'&business='+encodeURIComponent('pepperiermano@gmail.com')
+    +'&amount=4.99&currency_code=EUR'
+    +'&item_name='+encodeURIComponent('Lotto Prediction Engine Premium - Peppe Iermano')
+    +'&return='+encodeURIComponent('https://prometeo41.github.io/lottoprediction/?premium=unlocked')
+    +'&cancel_return='+encodeURIComponent('https://prometeo41.github.io/lottoprediction/')
+    +'&no_shipping=1&no_note=1';
+}
+function setPPPending(){localStorage.setItem('lotto_pp_pending','1');}
+function setNapoli(){document.getElementById('rsel').value='Napoli';curRuota='Napoli';renderAll();}
+function closeWelcome(){var e=document.getElementById('welcome-overlay');if(e)e.remove();}
+function closePaywall(){var e=document.getElementById('paywall-overlay');if(e)e.remove();}
+function closeBanner(){var e=document.getElementById('install-banner');if(e)e.style.display='none';}
+// ─────────────────────────────────────────────────────────────────────────
+
 // ============================================================
 // DATABASE
 // ============================================================
