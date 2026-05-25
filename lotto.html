@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lotto Prediction Engine</title>
+<style>
+:root{--fs:15px;--fc:#e8e8f0;--ta:left;--ic:36px;--icf:13px;--stc:#c9a227;--lbc:#9999bb;--tabc:#7777aa;--s1:#c9a227;--s2:#e87b2a;--s3:#e9c46a;--s4:#6aaccc;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#06060e;color:var(--fc);font-family:'Segoe UI',Arial,sans-serif;font-size:var(--fs);text-align:var(--ta)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#c9a227;border-radius:3px}
+.hdr{background:linear-gradient(180deg,#0d0d20,#06060e);border-bottom:1px solid #1c1c2e;padding:12px 18px}
+.hdr h1{font-size:19px;color:var(--stc);font-weight:700}
+.yrow{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:4px;background:#0d0d1c;border:1px solid rgba(201,162,39,.4);border-radius:5px;padding:3px 8px;font-size:10px;color:var(--stc);font-family:monospace}
+.tag button{background:none;border:none;color:#e63946;cursor:pointer;font-size:12px;padding:0}
+.tabs{background:#07070f;border-bottom:1px solid #1a1a2e;display:flex;overflow-x:auto;padding:0 6px}
+.tab{padding:10px 14px;border:none;cursor:pointer;font-family:monospace;font-size:9px;letter-spacing:1px;background:transparent;color:var(--tabc);text-transform:uppercase;border-bottom:2px solid transparent;white-space:nowrap}
+.tab.a{color:var(--stc);border-bottom-color:var(--stc)}
+.rbar{background:#08080f;border-bottom:1px solid #111;padding:8px 18px;display:flex;align-items:center;gap:10px}
+.cnt{max-width:960px;margin:0 auto;padding:14px 12px 40px}
+.card{background:#0d0d1c;border:1px solid #1c1c2e;border-radius:12px;padding:16px;margin-bottom:12px}
+.cgold{background:#0d0d1c;border:1px solid rgba(201,162,39,.35);border-radius:12px;padding:16px;margin-bottom:12px}
+.st{font-family:monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--stc);margin-bottom:11px;padding-bottom:6px;border-bottom:1px solid rgba(201,162,39,.18)}
+.bgold{border:none;border-radius:8px;padding:8px 18px;font-family:monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e}
+.bgold:disabled{background:#1c1c2e;color:#7777aa;cursor:not-allowed}
+.bgh{background:transparent;border:1px solid #1c1c2e;color:#666680;border-radius:6px;padding:5px 10px;font-family:monospace;font-size:9px;cursor:pointer}
+.bgh:hover{border-color:var(--stc);color:var(--stc)}
+.nb{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-family:monospace;font-weight:700}
+.sm{width:var(--ic);height:var(--ic);font-size:var(--icf);border:1.5px solid rgba(201,162,39,.4);background:#0d0d1c;color:#c9a227}
+.md{width:44px;height:44px;font-size:14px;border:2px solid rgba(201,162,39,.5);background:#0d0d1c;color:#c9a227}
+.lg{width:52px;height:52px;font-size:17px;border:2px solid #c9a227;background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;box-shadow:0 0 16px rgba(201,162,39,.4)}
+.pinb{width:46px;height:46px;font-size:15px;border:2px solid #9b59b6;background:linear-gradient(135deg,#9b59b6,#8e44ad);color:#fff;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-family:monospace;font-weight:700}
+.rnb{width:44px;height:44px;border:2px solid #e63946;background:linear-gradient(135deg,#e63946,#c1121f);color:#fff;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-family:monospace;font-weight:700}
+.row{display:grid;gap:4px;padding:6px 0;border-bottom:1px solid #1c1c2e;align-items:center}
+.barcell{background:#09091a;border-radius:3px;height:5px;overflow:hidden}
+.barfill{height:100%;border-radius:3px}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.pair{display:inline-flex;align-items:center;gap:6px;background:#09091a;border:1px solid #1c1c2e;border-radius:8px;padding:7px 10px}
+.pair.gld{border-color:rgba(201,162,39,.4)}
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:200;align-items:center;justify-content:center;padding:16px}
+.mbg.open{display:flex}
+.modal{background:#0d0d1c;border:1px solid rgba(201,162,39,.5);border-radius:14px;padding:22px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto}
+textarea{background:#080812;border:1px solid #c9a227;border-radius:7px;color:#c9a227;padding:10px;font-family:monospace;font-size:10px;width:100%;resize:vertical;outline:none;line-height:1.6}
+select{background:#0d0d1c;border:1px solid #c9a227;border-radius:6px;color:#c9a227;padding:5px 9px;font-family:monospace;font-size:10px;cursor:pointer;outline:none}
+input[type=number]{background:#09091a;border:1px solid #1c1c2e;border-radius:6px;color:#c9a227;padding:5px 10px;font-family:monospace;font-size:10px;outline:none;width:130px}
+input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%;cursor:pointer;padding:2px;background:#09091a}
+.ibox{padding:9px 12px;background:rgba(201,162,39,.07);border:1px solid rgba(201,162,39,.25);border-radius:7px;font-family:monospace;font-size:10px;color:#c9a227;margin-top:8px}
+.ebox{padding:9px 12px;background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.3);border-radius:7px;font-family:monospace;font-size:10px;color:#e63946;margin-top:8px}
+.statg{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:9px;margin-bottom:12px}
+.statc{text-align:center}
+.statc .v{font-size:22px;color:var(--stc);font-family:monospace;font-weight:700;word-break:break-all}
+.statc .l{font-family:monospace;font-size:9px;color:var(--lbc);letter-spacing:.5px;margin-top:3px;text-transform:uppercase}
+.statc .s{font-size:11px;color:#777790;margin-top:1px}
+.cdot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;display:inline-block}
+.cdot:hover{border-color:#fff!important}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}.fi{animation:fi .25s ease}
+@keyframes pl{0%,100%{opacity:1}50%{opacity:.25}}.pl{animation:pl 1.6s infinite}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <h1 style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="22" viewBox="0 0 32 22" style="display:inline-block;vertical-align:middle;border:1px solid #888;border-radius:2px;margin-right:6px">
+  <!-- Sfondo bianco -->
+  <rect width="32" height="22" fill="#fff"/>
+  <!-- Croce dorata -->
+  <rect x="13" y="0" width="6" height="22" fill="#c9a227" opacity="0.9"/>
+  <rect x="0" y="8" width="32" height="6" fill="#c9a227" opacity="0.9"/>
+  <!-- Giglio borbonico centrale -->
+  <text x="16" y="14" text-anchor="middle" font-size="9" fill="#06060e">&#8258;</text>
+</svg>
+    <span>Lotto Prediction Engine</span>
+  </h1>
+  <div style="font-family:monospace;font-size:10px;color:#9999bb;margin-top:4px;letter-spacing:.5px">
+    by <strong style="color:var(--stc)">Peppe Iermano</strong>
+    &nbsp;|&nbsp;
+    <a href="tel:+393495560487" style="color:#9999bb;text-decoration:none">+39 349 556 0487</a>
+  </div>
+  <div class="yrow" id="yrow"></div>
+</div>
+<div class="tabs">
+  <button class="tab a" onclick="goTab('prev',this)">&#127919; Previsione</button>
+  <button class="tab"   onclick="goTab('cop',this)">&#128279; Coppie &amp; Terni</button>
+  <button class="tab"   onclick="goTab('sch',this)">&#128203; Schedina</button>
+  <button class="tab"   onclick="goTab('rit',this)">&#9201; Ritardatari</button>
+  <button class="tab"   onclick="goTab('arc',this)">&#128197; Archivio</button>
+  <button class="tab"   onclick="goTab('lot',this)">&#127922; Lottomatica</button>
+  <button class="tab"   onclick="goTab('all',this)">&#127919; Tutte le Ruote</button>
+  <button class="tab"   onclick="goTab('set',this)" style="margin-left:auto">&#9881; Aspetto</button>
+</div>
+<div class="rbar">
+  <span style="font-family:monospace;font-size:10px;color:var(--lbc)">RUOTA</span>
+  <select id="rsel" onchange="curRuota=this.value;archPg=0;renderAll()">
+    <option>Bari</option><option>Cagliari</option><option>Firenze</option>
+    <option>Genova</option><option>Milano</option><option selected>Napoli</option>
+    <option>Palermo</option><option>Roma</option><option>Torino</option>
+    <option>Venezia</option><option>Nazionale</option>
+  </select>
+  <span id="rinfo" style="font-family:monospace;font-size:9px;color:#7777aa"></span>
+</div>
+<div class="cnt">
+  <div id="p-prev" class="fi"></div>
+  <div id="p-cop"  style="display:none"></div>
+  <div id="p-sch"  style="display:none"></div>
+  <div id="p-rit"  style="display:none"></div>
+  <div id="p-arc"  style="display:none"></div>
+  <div id="p-lot"  style="display:none"></div>
+  <div id="p-all"  style="display:none"></div>
+  <div id="p-set"  style="display:none"></div>
+</div>
+<div class="mbg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:16px;color:var(--stc);font-weight:700">Carica estrazioni TSV</div>
+      <button class="bgh" onclick="closeModal()">X Chiudi</button>
+    </div>
+    <p style="font-size:12px;color:var(--lbc);margin-bottom:10px;line-height:1.7">
+      Incolla i dati TSV. Formato:<br>
+      <code style="color:#77cc77;font-size:10px">DATA[TAB]CONCORSO[TAB]RUOTA[TAB]N1[TAB]N2[TAB]N3[TAB]N4[TAB]N5</code>
+    </p>
+    <textarea id="ta" rows="10" placeholder="02/01/2022&#9;1&#9;Napoli&#9;73&#9;5&#9;29&#9;70&#9;86&#10;..."></textarea>
+    <div id="minfo"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="bgh" style="color:#e63946;border-color:#e63946" onclick="doClearAll()">Cancella tutto</button>
+      <button class="bgh" onclick="doAnalyze()">Analizza</button>
+      <button class="bgold" id="bsave" style="display:none" onclick="doSave()">Salva dati</button>
+    </div>
+  </div>
+</div>
+<div style="text-align:center;padding:14px 16px;border-top:1px solid #1c1c2e;margin-top:6px;background:#07070f">
+  <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:6px;flex-wrap:wrap">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="22" viewBox="0 0 32 22" style="display:inline-block;vertical-align:middle;border:1px solid #888;border-radius:2px;margin-right:6px"><rect width="32" height="22" fill="#fff"/><rect x="13" y="0" width="6" height="22" fill="#c9a227" opacity="0.9"/><rect x="0" y="8" width="32" height="6" fill="#c9a227" opacity="0.9"/><text x="16" y="14" text-anchor="middle" font-size="9" fill="#06060e">&#8258;</text></svg>
+    <span style="font-family:monospace;font-size:11px;color:#9999bb">
+      <strong style="color:var(--stc)">Lotto Prediction Engine</strong>
+      &nbsp;&mdash;&nbsp;
+      by <strong style="color:var(--stc)">Peppe Iermano</strong>
+    </span>
+    <a href="tel:+393495560487" style="font-family:monospace;font-size:11px;color:#9999bb;text-decoration:none">+39 349 556 0487</a>
+  </div>
+  <span style="font-family:monospace;font-size:8px;color:#444460;letter-spacing:1px">SOLO USO STATISTICO &mdash; IL LOTTO E UN GIOCO D AZZARDO &mdash; GIOCA RESPONSABILMENTE</span>
+</div>
+<script>
+// ============================================================
+// DATABASE
+// ============================================================
+var DBNAME = 'lottoDB2', DBVER = 1, ST = 'draws', db = null;
+
+function openDB() {
+  return new Promise(function(ok, no) {
+    var r = indexedDB.open(DBNAME, DBVER);
+    r.onupgradeneeded = function(e) { e.target.result.createObjectStore(ST, {keyPath:'_id',autoIncrement:true}); };
+    r.onsuccess = function(e) { db = e.target.result; ok(); };
+    r.onerror = function(e) { no(e.target.error); };
+  });
+}
+
+function dbGetAll() {
+  return new Promise(function(ok, no) {
+    var r = db.transaction(ST,'readonly').objectStore(ST).getAll();
+    r.onsuccess = function(e) { ok(e.target.result); };
+    r.onerror = function(e) { no(e.target.error); };
+  });
+}
+
+function dbClearAll() {
+  return new Promise(function(ok, no) {
+    var r = db.transaction(ST,'readwrite').objectStore(ST).clear();
+    r.onsuccess = function() { ok(); };
+    r.onerror = function(e) { no(e.target.error); };
+  });
+}
+
+function dbSaveAll(items) {
+  // Salva in blocchi da 300 per non andare in timeout
+  var CHUNK = 300;
+  function saveChunk(i) {
+    if (i >= items.length) return Promise.resolve();
+    return new Promise(function(ok, no) {
+      var tx = db.transaction(ST, 'readwrite');
+      var store = tx.objectStore(ST);
+      var chunk = items.slice(i, i + CHUNK);
+      for (var k = 0; k < chunk.length; k++) {
+        var item = chunk[k];
+        var clean = {date:item.date, concorso:item.concorso, ruota:item.ruota, nums:item.nums};
+        store.add(clean);
+      }
+      tx.oncomplete = function() { ok(); };
+      tx.onerror = function(e) { no(e.target.error); };
+      tx.onabort = function() { no(new Error('Transazione annullata')); };
+    }).then(function() { return saveChunk(i + CHUNK); });
+  }
+  return dbClearAll().then(function() { return saveChunk(0); });
+}
+
+function readOldDB(name) {
+  return new Promise(function(ok) {
+    try {
+      var r = indexedDB.open(name, 1);
+      r.onsuccess = function(e) {
+        var old = e.target.result;
+        if (!old.objectStoreNames.contains(ST)) { old.close(); ok([]); return; }
+        var req = old.transaction(ST,'readonly').objectStore(ST).getAll();
+        req.onsuccess = function(ev) { old.close(); ok(ev.target.result || []); };
+        req.onerror = function() { old.close(); ok([]); };
+      };
+      r.onerror = function() { ok([]); };
+    } catch(e) { ok([]); }
+  });
+}
+
+// ============================================================
+// STATO
+// ============================================================
+var allDraws = [], curRuota = 'Napoli', archPg = 0;
+var show90 = false, copMode = 'cop', copFilter = '';
+var budgetTot = 10;
+var budgetPcts = {ambo:40, terno:30, quaterna:20, cinquina:10};
+
+function parse(raw) {
+  var out = [];
+  var lines = raw.trim().split(/\r?\n/);
+  for (var i = 0; i < lines.length; i++) {
+    var p = lines[i].split('\t');
+    if (p.length < 8) continue;
+    var nums = [];
+    for (var k = 3; k < 8; k++) {
+      var n = parseInt(p[k]);
+      if (n >= 1 && n <= 90) nums.push(n);
+    }
+    if (nums.length === 5) out.push({date:p[0].trim(), concorso:parseInt(p[1])||0, ruota:p[2].trim(), nums:nums});
+  }
+  return out;
+}
+
+function getYear(d) { return (d.date||'').split('/')[2] || '?'; }
+
+// ============================================================
+// MOTORE PREDITTIVO
+// ============================================================
+function engine(ruota) {
+  var dr = [];
+  for (var i = 0; i < allDraws.length; i++) {
+    if (allDraws[i].ruota === ruota) dr.push(allDraws[i]);
+  }
+  dr.sort(function(a,b){ return a.concorso - b.concorso; });
+  var N = dr.length;
+  if (!N) return null;
+  var R = Math.min(50,N), VR = Math.min(20,N);
+  var freq = [], fR = [], fVR = [], fW = [], last = [];
+  for (var i = 0; i <= 90; i++) { freq.push(0); fR.push(0); fVR.push(0); fW.push(0); last.push(-1); }
+
+  for (var i = 0; i < N; i++) {
+    var w = Math.exp((i-N+1)/(N*0.3));
+    for (var j = 0; j < dr[i].nums.length; j++) {
+      var n = dr[i].nums[j];
+      freq[n]++; last[n] = i; fW[n] += w;
+    }
+  }
+  for (var i = N-R; i < N; i++) for (var j = 0; j < dr[i].nums.length; j++) fR[dr[i].nums[j]]++;
+  for (var i = N-VR; i < N; i++) for (var j = 0; j < dr[i].nums.length; j++) fVR[dr[i].nums[j]]++;
+
+  var wMx = 0, wMn = 1e9;
+  for (var i = 1; i <= 90; i++) { if(fW[i]>wMx) wMx=fW[i]; if(fW[i]<wMn) wMn=fW[i]; }
+  var EX=N*5/90, eR=R*5/90, eVR=VR*5/90;
+
+  // coppie
+  var pc = {};
+  for (var d = 0; d < dr.length; d++) {
+    var s = dr[d].nums.slice().sort(function(a,b){return a-b;});
+    for (var i=0;i<5;i++) for (var j=i+1;j<5;j++) {
+      var k = s[i]+'-'+s[j]; pc[k] = (pc[k]||0)+1;
+    }
+  }
+  var coppie = [];
+  for (var k in pc) { var ab=k.split('-'); coppie.push({a:parseInt(ab[0]),b:parseInt(ab[1]),count:pc[k]}); }
+  coppie.sort(function(x,y){return y.count-x.count;}); if(coppie.length>30) coppie.length=30;
+
+  // terni
+  var tc = {};
+  for (var d = 0; d < dr.length; d++) {
+    var s = dr[d].nums.slice().sort(function(a,b){return a-b;});
+    for (var i=0;i<5;i++) for (var j=i+1;j<5;j++) for (var kk=j+1;kk<5;kk++) {
+      var key = s[i]+'-'+s[j]+'-'+s[kk]; tc[key]=(tc[key]||0)+1;
+    }
+  }
+  var terni = [];
+  for (var k in tc) { var abc=k.split('-'); terni.push({a:parseInt(abc[0]),b:parseInt(abc[1]),c:parseInt(abc[2]),count:tc[k]}); }
+  terni.sort(function(x,y){return y.count-x.count;}); if(terni.length>15) terni.length=15;
+
+  // numeri
+  var nums = [];
+  for (var n = 1; n <= 90; n++) {
+    var ritardo = last[n]===-1 ? N : N-1-last[n];
+    var lastDate = last[n]===-1 ? 'Mai' : dr[last[n]].date;
+    var rs = Math.min(100,(ritardo/18)*50);
+    var cs = Math.max(0,Math.min(100,50+((EX-freq[n])/Math.max(EX,1))*50));
+    var ws = 100-(wMx===wMn ? 0.5 : (fW[n]-wMn)/(wMx-wMn))*100;
+    var res = Math.min(100,(fR[n]/Math.max(eR,.01))*50);
+    var vrR = fVR[n]/Math.max(eVR,.01), rR = fR[n]/Math.max(eR,.01);
+    var ts = Math.min(100,Math.max(0,50+(vrR-rR)*40));
+    var score = Math.round((rs*.30+cs*.25+ws*.20+res*.15+ts*.10)*10)/10;
+    nums.push({n:n,score:score,freq:freq[n],freqR:fR[n],ritardo:ritardo,lastDate:lastDate,
+      trendVal:vrR-rR,rs:Math.round(rs),cs:Math.round(cs),ws:Math.round(ws),res:Math.round(res),ts:Math.round(ts)});
+  }
+  return {nums:nums, total:N, draws:dr, coppie:coppie, terni:terni};
+}
+
+function sc(s) {
+  var st = document.documentElement.style;
+  var v = getComputedStyle(document.documentElement);
+  if (s>=68) return v.getPropertyValue('--s1').trim();
+  if (s>=52) return v.getPropertyValue('--s2').trim();
+  if (s>=38) return v.getPropertyValue('--s3').trim();
+  return v.getPropertyValue('--s4').trim();
+}
+function rc(r) { return r>70?'#e63946':r>45?'#f4a261':r>25?'#e9c46a':'#57cc99'; }
+
+// ============================================================
+// RENDER PRINCIPALE
+// ============================================================
+function renderAll() {
+  var years = [];
+  var ymap = {};
+  for (var i=0;i<allDraws.length;i++) { var y=getYear(allDraws[i]); if(!ymap[y]){ymap[y]=1;years.push(y);} }
+  years.sort();
+
+  var h = '<button class="bgold" style="font-size:9px;padding:5px 12px" onclick="openModal()">+ Carica estrazioni</button>';
+  h += '<button class="bgh" style="border-color:#57cc99;color:#57cc99;font-size:9px;padding:5px 10px" onclick="exportData()">Backup</button>';
+  h += '<label style="border:1px solid #457b9d;color:#457b9d;border-radius:6px;padding:5px 10px;font-family:monospace;font-size:9px;cursor:pointer">Ripristina<input type="file" accept=".tsv,.txt" onchange="importData(event)" style="display:none"></label>';
+  for (var i=0;i<years.length;i++) {
+    h += '<span class="tag">'+years[i]+'<button onclick="delYear(\''+years[i]+'\')">x</button></span>';
+  }
+  if (allDraws.length) h += '<span style="font-family:monospace;font-size:9px;color:#6666aa">'+allDraws.length+' righe</span>';
+  document.getElementById('yrow').innerHTML = h;
+
+  var data = engine(curRuota);
+  document.getElementById('rinfo').textContent = data ? data.total+' estrazioni' : 'nessun dato';
+
+  var panels = ['cop','sch','rit','arc','lot'];
+  if (!data) {
+    var msg = '<div class="card" style="text-align:center;padding:40px;color:#9999bb">Nessun dato. Carica le estrazioni.</div>';
+    document.getElementById('p-prev').innerHTML = msg;
+    for (var i=0;i<panels.length;i++) document.getElementById('p-'+panels[i]).innerHTML = msg;
+  } else {
+    renderPrev(data);
+    renderCop(data);
+    renderSch(data, years);
+    renderRit(data);
+    renderArc(data);
+    renderLot(data, years);
+  }
+  renderSet();
+}
+
+// ============================================================
+// PREVISIONE
+// ============================================================
+function renderPrev(data) {
+  var nums = data.nums, total = data.total;
+  var sorted = nums.slice().sort(function(a,b){return b.score-a.score;});
+  var top5 = sorted.slice(0,5);
+  var list = show90 ? sorted : sorted.slice(0,20);
+  var medals = ['1','2','3','4','5'];
+
+  var balls = '';
+  for (var i=0;i<top5.length;i++) {
+    var x = top5[i], col = sc(x.score);
+    var style = i===0 ? '' : 'border-color:'+col+';color:'+col+';background:'+col+'18';
+    balls += '<div style="text-align:center">'
+      +'<div class="nb '+(i===0?'lg':'md')+'" style="'+style+'">'+x.n+'</div>'
+      +'<div style="font-family:monospace;font-size:9px;color:'+col+';margin-top:4px">'+x.score+'%</div>'
+      +'<div style="font-size:10px;color:var(--lbc)">#'+medals[i]+'</div>'
+      +'</div>';
+  }
+
+  var detail = '';
+  var algo = [['Ritardo',null,'#e63946'],['Conv.',null,'#c9a227'],['Peso',null,'#9b59b6'],['Rec.',null,'#e87b2a'],['Trend',null,'#57cc99']];
+  for (var i=0;i<top5.length;i++) {
+    var x = top5[i], col = sc(x.score);
+    var bars = '';
+    var vals = [x.rs, x.cs, x.ws, x.res, x.ts];
+    var lbls = ['Ritardo','Conv.','Peso','Rec.','Trend'];
+    var cols = ['#e63946','#c9a227','#9b59b6','#e87b2a','#57cc99'];
+    for (var j=0;j<5;j++) {
+      bars += '<div style="display:flex;align-items:center;gap:4px;margin-bottom:3px">'
+        +'<span style="font-size:9px;color:var(--lbc);width:52px;flex-shrink:0">'+lbls[j]+'</span>'
+        +'<div class="barcell" style="flex:1"><div class="barfill" style="width:'+vals[j]+'%;background:'+cols[j]+'"></div></div>'
+        +'<span style="font-family:monospace;font-size:9px;color:'+cols[j]+';width:22px;text-align:right">'+vals[j]+'</span>'
+        +'</div>';
+    }
+    detail += '<div style="background:#09091a;border:1px solid #1a1a2e;border-radius:8px;padding:8px 10px">'
+      +'<div style="font-family:monospace;font-weight:700;color:'+col+';font-size:13px;margin-bottom:5px">N. '+x.n+'</div>'
+      +bars+'</div>';
+  }
+
+  var rows = '';
+  for (var i=0;i<list.length;i++) {
+    var x = list[i], col = sc(x.score);
+    var trendCol = x.trendVal>.1?'#57cc99':x.trendVal<-.1?'#e63946':'var(--lbc)';
+    var trendArrow = x.trendVal>.1?'su':x.trendVal<-.1?'giu':'-';
+    rows += '<div class="row" style="grid-template-columns:24px 38px 1fr 46px 40px">'
+      +'<span style="font-family:monospace;font-size:9px;color:#6666aa">'+(i+1)+'</span>'
+      +'<div class="nb sm" style="border-color:'+col+';color:'+col+';background:'+col+'15">'+x.n+'</div>'
+      +'<div style="display:flex;align-items:center;gap:5px">'
+      +'<div class="barcell" style="width:'+Math.round(x.score*1.1)+'px;max-width:110px"><div class="barfill" style="width:100%;background:'+col+'"></div></div>'
+      +'<span style="font-family:monospace;font-size:10px;color:'+col+'">'+x.score+'</span>'
+      +'<span style="font-size:10px;color:'+trendCol+'">'+trendArrow+'</span>'
+      +'</div>'
+      +'<span style="font-family:monospace;font-size:10px;color:var(--lbc);text-align:center">'+x.freq+'</span>'
+      +'<span style="font-family:monospace;font-size:10px;color:'+rc(x.ritardo)+';text-align:right">'+x.ritardo+'</span>'
+      +'</div>';
+  }
+
+  var hdr5 = '<div class="row" style="grid-template-columns:24px 38px 1fr 46px 40px;border-bottom:1px solid #1a1a2e;padding-bottom:5px;margin-bottom:3px">'
+    +'<span style="font-family:monospace;font-size:9px;color:var(--lbc)">#</span>'
+    +'<span style="font-family:monospace;font-size:9px;color:var(--lbc)">N.</span>'
+    +'<span style="font-family:monospace;font-size:9px;color:var(--lbc)">Score</span>'
+    +'<span style="font-family:monospace;font-size:9px;color:var(--lbc)">Usc.</span>'
+    +'<span style="font-family:monospace;font-size:9px;color:var(--lbc)">Rit.</span>'
+    +'</div>';
+
+  document.getElementById('p-prev').innerHTML =
+    '<div class="cgold">'
+    +'<div class="st">Top 5 numeri - '+curRuota+' ('+total+' estrazioni)</div>'
+    +'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">'+balls+'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px">'+detail+'</div>'
+    +'</div>'
+    +'<div class="card">'
+    +'<div class="hrow">'
+    +'<div class="st" style="margin-bottom:0">Ranking 1-90</div>'
+    +'<button class="bgh" onclick="show90=!show90;renderAll()">'+(show90?'Mostra top 20':'Mostra tutti 90')+'</button>'
+    +'</div>'
+    +hdr5+rows
+    +'</div>';
+}
+
+// ============================================================
+// COPPIE & TERNI
+// ============================================================
+function renderCop(data) {
+  var coppie = data.coppie, terni = data.terni, nums = data.nums, total = data.total;
+  function gs(n) { for(var i=0;i<nums.length;i++) if(nums[i].n===n) return nums[i].score; return 0; }
+
+  var fc = copFilter ? coppie.filter(function(c){return c.a===+copFilter||c.b===+copFilter;}) : coppie;
+  var ft = copFilter ? terni.filter(function(t){return t.a===+copFilter||t.b===+copFilter||t.c===+copFilter;}) : terni;
+  var top = coppie[0];
+  var cMax = top ? top.count : 1;
+
+  var chart = '';
+  for (var i=0;i<Math.min(10,coppie.length);i++) {
+    var c = coppie[i];
+    var pct = Math.round(c.count/cMax*100);
+    var bg = i===0?'#c9a227':i<3?'#e87b2a':'#2a4a6e';
+    chart += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'
+      +'<span style="font-family:monospace;font-size:9px;color:var(--lbc);width:58px;flex-shrink:0">'+c.a+'-'+c.b+'</span>'
+      +'<div style="flex:1;background:#09091a;border-radius:3px;height:12px;overflow:hidden">'
+      +'<div style="width:'+pct+'%;height:100%;background:'+bg+';border-radius:3px"></div></div>'
+      +'<span style="font-family:monospace;font-size:9px;color:'+(i===0?'var(--stc)':'var(--lbc)')+';width:22px">'+c.count+'</span>'
+      +'</div>';
+  }
+
+  var list = copMode==='cop' ? fc : ft;
+  var items = '';
+  for (var i=0;i<list.length;i++) {
+    var x = list[i];
+    var ns = copMode==='cop' ? [x.a,x.b] : [x.a,x.b,x.c];
+    var sum = 0; for(var j=0;j<ns.length;j++) sum+=gs(ns[j]);
+    var avg = Math.round(sum/ns.length);
+    var balls = '';
+    for(var j=0;j<ns.length;j++) {
+      var col = sc(gs(ns[j]));
+      balls += '<div class="nb sm" style="border-color:'+col+';color:'+col+';background:'+col+'15;width:30px;height:30px;font-size:11px">'+ns[j]+'</div>';
+    }
+    items += '<div class="pair'+(i<3?' gld':'')+'">'+balls
+      +'<div><div style="font-family:monospace;font-size:11px;color:'+(i<3?'var(--stc)':'#aaa')+';font-weight:700">'+x.count+'x</div>'
+      +'<div style="font-size:9px;color:var(--lbc)">score '+avg+'</div></div>'
+      +(i<3?'<span style="font-size:12px">'+(i===0?'1':i===1?'2':'3')+'</span>':'')
+      +'</div>';
+  }
+
+  var topVal = top ? top.a+'-'+top.b : '-';
+  var topCnt = top ? top.count+' uscite' : '';
+  var ternoTop = terni[0] ? terni[0].a+'-'+terni[0].b+'-'+terni[0].c : '-';
+  var ternoCnt = terni[0] ? terni[0].count+'x' : '';
+  var freqRel = top ? ((top.count/total)*100).toFixed(1)+'%' : '-';
+
+  var modeBtn = function(m,lbl) {
+    var active = copMode===m;
+    return '<button onclick="copMode=\''+m+'\';renderAll()" style="font-size:9px;padding:5px 12px;'
+      +'background:'+(active?'var(--stc)':'transparent')+';color:'+(active?'#06060e':'var(--lbc)')+';'
+      +'border:1px solid '+(active?'var(--stc)':'#1c1c2e')+';border-radius:6px;cursor:pointer;font-family:monospace">'+lbl+'</button>';
+  };
+
+  document.getElementById('p-cop').innerHTML =
+    '<div class="statg">'
+    +'<div class="card statc"><div class="v" style="font-size:'+(top?18:22)+'px">'+topVal+'</div><div class="l">Coppia top</div><div class="s">'+topCnt+'</div></div>'
+    +'<div class="card statc"><div class="v">'+(top?top.count:'-')+'</div><div class="l">Max uscite</div><div class="s">su '+total+'</div></div>'
+    +'<div class="card statc"><div class="v" style="font-size:16px">'+ternoTop+'</div><div class="l">Terno top</div><div class="s">'+ternoCnt+'</div></div>'
+    +'<div class="card statc"><div class="v">'+freqRel+'</div><div class="l">Freq. relativa</div><div class="s">coppia top</div></div>'
+    +'</div>'
+    +(copMode==='cop'&&!copFilter?'<div class="card" style="margin-bottom:12px"><div class="st">Top 10 coppie</div>'+chart+'</div>':'')
+    +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:11px;flex-wrap:wrap">'
+    +modeBtn('cop','Coppie')+modeBtn('ter','Terni')
+    +'<input type="number" min="1" max="90" placeholder="Filtra numero" value="'+copFilter+'" oninput="copFilter=this.value;renderAll()" style="margin-left:auto">'
+    +'</div>'
+    +'<div class="card"><div class="st">'+(copFilter?(copMode==='cop'?'Coppie':'Terni')+' con '+copFilter:(copMode==='cop'?'Top 30 coppie':'Top 15 terni'))+'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:8px">'+items+'</div></div>';
+}
+
+// ============================================================
+// SCHEDINA
+// ============================================================
+function renderSch(data, years) {
+  var nums = data.nums, coppie = data.coppie, terni = data.terni, total = data.total;
+  var byScore = nums.slice().sort(function(a,b){return b.score-a.score;});
+  var byRit = nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
+  var byTrend = [];
+  for(var i=0;i<nums.length;i++) if(nums[i].trendVal>0) byTrend.push(nums[i]);
+  byTrend.sort(function(a,b){return b.trendVal-a.trendVal;});
+
+  var dr = years.length ? years[0]+'-'+years[years.length-1] : '';
+
+  var cinquina = [];
+  for(var i=0;i<byScore.length&&cinquina.length<3;i++) cinquina.push(byScore[i].n);
+  for(var i=0;i<byRit.length&&cinquina.length<5;i++) { if(cinquina.indexOf(byRit[i].n)<0) cinquina.push(byRit[i].n); }
+
+  var quaterna = [];
+  for(var i=0;i<byScore.length&&quaterna.length<2;i++) quaterna.push(byScore[i].n);
+  for(var i=0;i<coppie.length&&quaterna.length<4;i++) {
+    if(quaterna.indexOf(coppie[i].a)<0) quaterna.push(coppie[i].a);
+    if(quaterna.length<4&&quaterna.indexOf(coppie[i].b)<0) quaterna.push(coppie[i].b);
+  }
+
+  var terno = coppie[0] ? [coppie[0].a, coppie[0].b] : [byScore[0].n, byScore[1].n];
+  for(var i=0;i<byScore.length&&terno.length<3;i++) { if(terno.indexOf(byScore[i].n)<0) terno.push(byScore[i].n); }
+
+  var amboCaldo = [];
+  for(var i=0;i<byTrend.length&&amboCaldo.length<2;i++) amboCaldo.push(byTrend[i].n);
+  for(var i=0;i<byScore.length&&amboCaldo.length<2;i++) { if(amboCaldo.indexOf(byScore[i].n)<0) amboCaldo.push(byScore[i].n); }
+
+  var amboRit = [byRit[0].n, byRit[1].n];
+  var coppia = coppie[0] ? [coppie[0].a, coppie[0].b] : [byScore[0].n, byScore[1].n];
+  var ternoFreq = terni[0] ? [terni[0].a, terni[0].b, terni[0].c] : terno.slice();
+  var jolly = byScore[0].n;
+
+  function balls(arr, cls) {
+    var h = ''; cls = cls||'pinb';
+    for(var i=0;i<arr.length;i++) h+='<div class="'+cls+'">'+arr[i]+'</div>';
+    return h;
+  }
+  function ballCol(arr, bc) {
+    var h = '';
+    for(var i=0;i<arr.length;i++) h+='<div class="nb md" style="border-color:'+bc+';color:'+bc+';background:'+bc+'18">'+arr[i]+'</div>';
+    return h;
+  }
+
+  var analisi = 'Il numero '+byScore[0].n+' ha il massimo score ('+byScore[0].score+'%) su '+total+' estrazioni ('+dr+'). '
+    +'Il '+byRit[0].n+' manca da '+byRit[0].ritardo+' estrazioni. '
+    +'La coppia '+coppia[0]+'-'+coppia[1]+' e la piu frequente con '+(coppie[0]?coppie[0].count:0)+' uscite.';
+
+  document.getElementById('p-sch').innerHTML =
+    '<div class="cgold">'
+    +'<div class="st">Schedina - '+curRuota+' - '+total+' estrazioni - Offline</div>'
+    +'<div style="margin-bottom:14px">'
+    +'<div style="font-family:monospace;font-size:9px;color:var(--lbc);letter-spacing:1px;margin-bottom:8px">CINQUINA PREDITTIVA</div>'
+    +'<div style="display:flex;gap:10px;flex-wrap:wrap">'+balls(cinquina)+'</div>'
+    +'</div></div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:10px">'
+    +'<div class="card"><div class="st">Quaterna</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+balls(quaterna)+'</div></div>'
+    +'<div class="card"><div class="st">Terno</div><div style="display:flex;gap:7px">'+balls(terno)+'</div></div>'
+    +'<div class="card"><div class="st">Terno frequente</div><div style="display:flex;gap:7px">'+balls(ternoFreq)+'</div></div>'
+    +'<div class="card"><div class="st">Ambo caldo</div><div style="display:flex;gap:7px">'+ballCol(amboCaldo,'#e87b2a')+'</div></div>'
+    +'<div class="card"><div class="st">Ambo ritardatari</div><div style="display:flex;gap:7px">'+ballCol(amboRit,'#e63946')+'</div></div>'
+    +'<div class="card"><div class="st">Coppia frequente</div><div style="display:flex;gap:7px">'+ballCol(coppia,'#57cc99')+'</div></div>'
+    +'<div class="card"><div class="st">Jolly</div><div class="rnb">'+jolly+'</div></div>'
+    +'</div>'
+    +'<div class="card" style="margin-bottom:10px"><div class="st">Ragionamento statistico</div>'
+    +'<p style="font-size:13px;color:var(--fc);line-height:1.7">'+analisi+'</p></div>'
+    +'<div style="background:rgba(230,57,70,.06);border:1px solid rgba(230,57,70,.18);border-radius:8px;padding:10px 14px">'
+    +'<span style="font-size:12px;color:var(--lbc)">Il lotto e un gioco d azzardo. Questa schedina e solo analisi statistica.</span></div>';
+}
+
+// ============================================================
+// RITARDATARI
+// ============================================================
+function renderRit(data) {
+  var nums = data.nums;
+  var sorted = nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
+  var maxR = sorted[0] ? sorted[0].ritardo : 1;
+
+  var top20 = '';
+  for(var i=0;i<Math.min(20,sorted.length);i++) {
+    var x = sorted[i];
+    top20 += '<div style="text-align:center;background:#09091a;border:1px solid '+rc(x.ritardo)+'33;border-radius:8px;padding:7px 10px;min-width:56px">'
+      +'<div style="font-family:monospace;font-size:18px;font-weight:700;color:'+rc(x.ritardo)+'">'+x.n+'</div>'
+      +'<div style="font-family:monospace;font-size:8px;color:var(--lbc);letter-spacing:1px">RITARDO</div>'
+      +'<div style="font-family:monospace;font-size:11px;color:#aaa">'+x.ritardo+'</div>'
+      +'</div>';
+  }
+
+  var full = '';
+  for(var i=0;i<sorted.length;i++) {
+    var x = sorted[i];
+    var tw = Math.round((x.ritardo/maxR)*90);
+    var trend = x.trendVal>.1?'su':x.trendVal<-.1?'giu':'-';
+    var tc = x.trendVal>.1?'#57cc99':x.trendVal<-.1?'#e63946':'var(--lbc)';
+    full += '<div class="row" style="grid-template-columns:24px 38px 1fr 64px 42px">'
+      +'<span style="font-family:monospace;font-size:9px;color:#6666aa">'+(i+1)+'</span>'
+      +'<div class="nb sm" style="border-color:'+rc(x.ritardo)+';color:'+rc(x.ritardo)+';background:'+rc(x.ritardo)+'12;width:34px;height:34px;font-size:12px">'+x.n+'</div>'
+      +'<div style="display:flex;align-items:center;gap:5px">'
+      +'<div class="barcell" style="width:'+tw+'px"><div class="barfill" style="width:100%;background:'+rc(x.ritardo)+'"></div></div>'
+      +'<span style="font-family:monospace;font-size:10px;color:#aaa">'+x.ritardo+'</span>'
+      +'<span style="font-size:10px;color:'+tc+'">'+trend+'</span>'
+      +'</div>'
+      +'<span style="font-size:10px;color:var(--lbc)">'+x.lastDate+'</span>'
+      +'<span style="font-family:monospace;font-size:9px;color:var(--lbc);text-align:right">f:'+x.freq+'</span>'
+      +'</div>';
+  }
+
+  document.getElementById('p-rit').innerHTML =
+    '<div class="card" style="margin-bottom:12px"><div class="st">Top 20 piu assenti - '+curRuota+'</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:8px">'+top20+'</div></div>'
+    +'<div class="card"><div class="st">Classifica completa</div>'+full+'</div>';
+}
+
+// ============================================================
+// ARCHIVIO
+// ============================================================
+function renderArc(data) {
+  var draws = data.draws;
+  var PER = 15, tot = draws.length, pages = Math.ceil(tot/PER);
+  var pg = Math.max(0, Math.min(archPg, pages-1));
+  var rev = draws.slice().reverse();
+  var items = rev.slice(pg*PER, pg*PER+PER);
+
+  var rows = '';
+  for(var i=0;i<items.length;i++) {
+    var d = items[i];
+    var nbs = '';
+    for(var j=0;j<d.nums.length;j++) nbs+='<div class="nb sm" style="width:30px;height:30px;font-size:11px">'+d.nums[j]+'</div>';
+    rows += '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid #1c1c2e">'
+      +'<div style="min-width:86px;font-family:monospace;font-size:10px;color:var(--lbc)">'+d.date+'</div>'
+      +'<div style="font-family:monospace;font-size:9px;color:#6666aa;min-width:30px">#'+d.concorso+'</div>'
+      +'<div style="display:flex;gap:6px">'+nbs+'</div></div>';
+  }
+
+  var prevDis = pg===0?' disabled':'', nextDis = pg>=pages-1?' disabled':'';
+  document.getElementById('p-arc').innerHTML =
+    '<div class="card">'
+    +'<div class="hrow" style="margin-bottom:12px">'
+    +'<div class="st" style="margin-bottom:0">Storico - '+curRuota+'</div>'
+    +'<span style="font-family:monospace;font-size:9px;color:var(--lbc)">Pag '+(pg+1)+'/'+Math.max(pages,1)+' - '+tot+' totali</span>'
+    +'</div>'+rows
+    +'<div style="display:flex;gap:8px;justify-content:center;margin-top:12px">'
+    +'<button class="bgh" onclick="archPg=Math.max(0,'+(pg-1)+');renderAll()"'+prevDis+'>Prec</button>'
+    +'<button class="bgh" onclick="archPg='+(pg+1)+';renderAll()"'+nextDis+'>Succ</button>'
+    +'</div></div>';
+}
+
+// ============================================================
+// LOTTOMATICA + BUDGET
+// ============================================================
+function renderLot(data, years) {
+  var nums = data.nums, coppie = data.coppie;
+  var byScore = nums.slice().sort(function(a,b){return b.score-a.score;});
+  var byRit = nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
+
+  var cinquina = [];
+  for(var i=0;i<byScore.length&&cinquina.length<3;i++) cinquina.push(byScore[i].n);
+  for(var i=0;i<byRit.length&&cinquina.length<5;i++) { if(cinquina.indexOf(byRit[i].n)<0) cinquina.push(byRit[i].n); }
+
+  var ambo1 = coppie[0] ? [coppie[0].a, coppie[0].b] : [byScore[0].n, byScore[1].n];
+  var ambo2 = [byRit[0].n, byRit[1].n];
+  var t3 = coppie[0] ? [coppie[0].a, coppie[0].b] : [byScore[0].n, byScore[1].n];
+  for(var i=0;i<byScore.length&&t3.length<3;i++) { if(t3.indexOf(byScore[i].n)<0) t3.push(byScore[i].n); }
+
+  function fb(arr) {
+    var h='';
+    for(var i=0;i<arr.length;i++) {
+      h+='<span style="display:inline-flex;width:34px;height:34px;align-items:center;justify-content:center;'
+        +'background:rgba(201,162,39,.13);border:1.5px solid var(--stc);border-radius:50%;'
+        +'font-family:monospace;font-weight:700;font-size:13px;color:var(--stc);margin:2px">'+arr[i]+'</span>';
+    }
+    return h;
+  }
+
+  var giocate = [
+    {label:'Cinquina', nums:cinquina, tipo:'Cinquina'},
+    {label:'Terno',    nums:t3,       tipo:'Terno'},
+    {label:'Ambo coppia', nums:ambo1, tipo:'Ambo'},
+    {label:'Ambo ritard.', nums:ambo2, tipo:'Ambo'}
+  ];
+
+  var cards = '';
+  for(var i=0;i<giocate.length;i++) {
+    var g = giocate[i];
+    cards += '<div class="card">'
+      +'<div class="st">'+g.label+'</div>'
+      +'<div style="margin-bottom:10px">'+fb(g.nums)+'</div>'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">'
+      +'<div><div style="font-family:monospace;font-size:9px;color:var(--lbc)">RUOTA</div>'
+      +'<div style="font-family:monospace;font-size:12px;color:var(--stc)">'+curRuota.toUpperCase()+'</div></div>'
+      +'<div><div style="font-family:monospace;font-size:9px;color:var(--lbc)">TIPO</div>'
+      +'<div style="font-family:monospace;font-size:12px;color:var(--stc)">'+g.tipo+'</div></div>'
+      +'<button class="bgh" id="cb'+i+'" onclick="cpNums(['+g.nums.join(',')+'],\'cb'+i+'\')" '
+      +'style="border-color:var(--stc);color:var(--stc);padding:6px 12px">Copia</button>'
+      +'</div></div>';
+  }
+
+  // Budget
+  // Vincite ufficiali Lottomatica per euro giocato
+  // Cinquina: premio FISSO massimo 6.000.000 euro (non moltiplicato)
+  // Limite totale per schedina: 6.000.000 euro
+  var BINFO = [
+    {id:'ambo',     label:'Ambo',     pay:250,     prob:'1 su 400',      col:'#57cc99', pct:budgetPcts.ambo,     maxWin:null},
+    {id:'terno',    label:'Terno',    pay:4500,    prob:'1 su 11.748',   col:'#c9a227', pct:budgetPcts.terno,    maxWin:null},
+    {id:'quaterna', label:'Quaterna', pay:120000,  prob:'1 su 511.038',  col:'#e87b2a', pct:budgetPcts.quaterna, maxWin:null},
+    {id:'cinquina', label:'Cinquina', pay:6000000, prob:'1 su 43 mln',   col:'#9b59b6', pct:budgetPcts.cinquina, maxWin:6000000, fixed:true}
+  ];
+
+  var bcards = '';
+  var totUsed = 0;
+  var totWin = 0;
+  for(var i=0;i<BINFO.length;i++) {
+    var g = BINFO[i];
+    var eur = Math.max(1, Math.round(budgetTot * g.pct / 100));
+    totUsed += eur;
+    // Cinquina: premio fisso 6.000.000 euro (non moltiplicato per importo)
+    var winVal = g.fixed ? g.maxWin : (eur * g.pay);
+    totWin += winVal;
+    var win = winVal.toLocaleString('it-IT');
+    var winLabel = g.fixed ? 'PREMIO FISSO MASSIMO' : 'VINCITA POTENZIALE';
+    var overLimit = totWin > 6000000;
+    bcards += '<div style="background:#09091a;border:1px solid '+(overLimit?'#e63946':g.col)+'44;border-radius:10px;padding:12px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      +'<span style="font-family:monospace;font-size:11px;color:'+g.col+';font-weight:700">'+g.label+'</span>'
+      +'<span style="font-size:9px;color:var(--lbc)">'+g.prob+'</span>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<button onclick="adjBgt(\''+g.id+'\',-1)" style="background:#0d0d1c;border:1px solid #1c1c2e;color:#aaa;border-radius:5px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0">-</button>'
+      +'<div style="flex:1;text-align:center;font-family:monospace;font-size:22px;color:'+g.col+';font-weight:700">'+eur+' euro</div>'
+      +'<button onclick="adjBgt(\''+g.id+'\',+1)" style="background:#0d0d1c;border:1px solid #1c1c2e;color:#aaa;border-radius:5px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0">+</button>'
+      +'</div>'
+      +'<div style="background:#0d0d1c;border-radius:6px;padding:7px 10px;margin-bottom:5px">'
+      +'<div style="font-size:9px;color:var(--lbc);margin-bottom:2px">'+winLabel+'</div>'
+      +'<div style="font-family:monospace;font-size:15px;color:'+g.col+';font-weight:700">'+win+' euro</div>'
+      +(g.fixed?'<div style="font-size:9px;color:#9b59b6;margin-top:2px">Indipendente dalla puntata</div>':'')
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:6px">'
+      +'<div style="flex:1;background:#1a1a2e;border-radius:3px;height:4px;overflow:hidden">'
+      +'<div style="width:'+g.pct+'%;height:100%;background:'+g.col+';border-radius:3px"></div></div>'
+      +'<span style="font-family:monospace;font-size:9px;color:'+g.col+'">'+g.pct+'%</span>'
+      +'</div></div>';
+  }
+
+  var presets = '';
+  var presetVals = [5,10,20,50,100];
+  for(var i=0;i<presetVals.length;i++) {
+    var v = presetVals[i];
+    var active = budgetTot===v;
+    presets += '<button onclick="budgetTot='+v+';renderAll()" style="background:'+(active?'var(--stc)':'#0d0d1c')+';color:'+(active?'#06060e':'var(--lbc)')+';border:1px solid '+(active?'var(--stc)':'#1c1c2e')+';border-radius:6px;padding:4px 10px;font-family:monospace;font-size:10px;cursor:pointer">'+v+' euro</button>';
+  }
+
+  var totCol = totUsed===budgetTot ? '#57cc99' : '#e87b2a';
+  var capOk = totWin <= 6000000;
+  var cons = budgetTot<=5 ? 'Con meno di 5 euro punta su ambo - il piu probabile.'
+           : budgetTot<=20 ? 'Budget medio: ambo e terno sono le giocate piu bilanciate.'
+           : 'Budget alto: considera una quaterna mantenendo copertura con ambo.';
+
+  document.getElementById('p-lot').innerHTML =
+    '<div class="cgold" style="margin-bottom:14px">'
+    +'<div class="st">Gioca su Lottomatica - '+curRuota+'</div>'
+    +'<p style="font-size:12px;color:var(--lbc);margin-bottom:14px;line-height:1.7">'
+    +'Schedina dai tuoi dati reali. Copia i numeri e inseriscili su Lottomatica.</p>'
+    +'<a href="https://www.lottomatica.it/lotterie/lotto" target="_blank" rel="noopener noreferrer" '
+    +'style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#e63946,#c1121f);'
+    +'color:#fff;border-radius:8px;padding:10px 20px;font-family:monospace;font-size:11px;letter-spacing:1px;'
+    +'font-weight:700;text-decoration:none;box-shadow:0 0 14px rgba(230,57,70,.3)">'
+    +'Apri Lottomatica.it - Accedi e Gioca</a>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px">'+cards+'</div>'
+    +'<div class="card" style="border:1px solid rgba(201,162,39,.3)">'
+    +'<div class="st">Gestione budget di gioco</div>'
+    +'<p style="font-size:12px;color:var(--lbc);margin-bottom:14px;line-height:1.6">'
+    +'Inserisci la somma totale da giocare. L app la divide nelle proporzioni consigliate '
+    +'mostrando le vincite potenziali ufficiali Lottomatica.<br>'
+    +'<strong style="color:#e63946;font-size:10px">Minimo 1 euro per giocata. Gioca responsabilmente.</strong></p>'
+    +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap">'
+    +'<span style="font-family:monospace;font-size:11px;color:var(--lbc)">TOTALE:</span>'
+    +'<button onclick="budgetTot=Math.max(4,budgetTot-1);renderAll()" style="background:#0d0d1c;border:1px solid #1c1c2e;color:#aaa;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:18px;line-height:1">-</button>'
+    +'<span style="font-family:monospace;font-size:26px;color:var(--stc);font-weight:700;min-width:60px;text-align:center">'+budgetTot+' euro</span>'
+    +'<button onclick="budgetTot=Math.min(500,budgetTot+1);renderAll()" style="background:#0d0d1c;border:1px solid #1c1c2e;color:#aaa;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:18px;line-height:1">+</button>'
+    +'<div style="display:flex;gap:5px;flex-wrap:wrap">'+presets+'</div>'
+    +'</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px">'+bcards+'</div>'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;background:#09091a;border-radius:8px;padding:10px 14px;margin-bottom:10px;flex-wrap:wrap;gap:6px">'
+    +'<span style="font-family:monospace;font-size:10px;color:var(--lbc)">TOTALE ALLOCATO</span>'
+    +'<span style="font-family:monospace;font-size:16px;color:'+totCol+';font-weight:700">'+totUsed+' / '+budgetTot+' euro</span>'
+    +'</div>'
+    +'<div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.2);border-radius:8px;padding:10px 14px;margin-bottom:8px">'
+    +'<span style="font-size:12px;color:var(--fc)">Consiglio: '+cons+'</span>'
+    +'</div>'
+    +(capOk
+      ? '<div style="background:rgba(87,204,153,.06);border:1px solid rgba(87,204,153,.3);border-radius:8px;padding:10px 14px">'
+        +'<div style="font-size:11px;color:#57cc99;font-family:monospace;margin-bottom:3px">LIMITE LOTTOMATICA: OK</div>'
+        +'<div style="font-size:12px;color:var(--lbc)">Vincita potenziale totale: '+totWin.toLocaleString('it-IT')+' euro (sotto il limite di 6.000.000)</div>'
+        +'</div>'
+      : '<div style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.4);border-radius:8px;padding:10px 14px">'
+        +'<div style="font-size:11px;color:#e63946;font-family:monospace;margin-bottom:3px">ATTENZIONE - LIMITE LOTTOMATICA SUPERATO</div>'
+        +'<div style="font-size:12px;color:var(--lbc);margin-bottom:6px">Vincita potenziale totale: '+totWin.toLocaleString('it-IT')+' euro supera il limite di 6.000.000 euro per schedina.</div>'
+        +'<div style="font-size:11px;color:#e63946">Riduci la puntata su Quaterna o Cinquina.</div>'
+        +'</div>'
+    )
+    +'</div>';
+}
+
+function adjBgt(id, delta) {
+  if (id==='ambo')     budgetPcts.ambo     = Math.max(0, budgetPcts.ambo+delta);
+  if (id==='terno')    budgetPcts.terno    = Math.max(0, budgetPcts.terno+delta);
+  if (id==='quaterna') budgetPcts.quaterna = Math.max(0, budgetPcts.quaterna+delta);
+  if (id==='cinquina') budgetPcts.cinquina = Math.max(0, budgetPcts.cinquina+delta);
+  renderAll();
+}
+
+function cpNums(arr, id) {
+  navigator.clipboard.writeText(arr.join(' - ')).then(function() {
+    var el = document.getElementById(id);
+    if (el) { var old=el.textContent; el.textContent='Copiato!'; el.style.color='#57cc99'; setTimeout(function(){el.textContent=old;el.style.color='';},2000); }
+  });
+}
+
+
+// ============================================================
+// TUTTE LE RUOTE
+// ============================================================
+function renderAllRuote() {
+  var RUOTE = ['Bari','Cagliari','Firenze','Genova','Milano',
+               'Napoli','Palermo','Roma','Torino','Venezia','Nazionale'];
+
+  if (!allDraws.length) {
+    document.getElementById('p-all').innerHTML =
+      '<div class="card" style="text-align:center;padding:40px;color:#9999bb">Carica le estrazioni per vedere questa pagina.</div>';
+    return;
+  }
+
+  // Calcola top numeri per ogni ruota
+  var ruoteData = [];
+  for (var ri = 0; ri < RUOTE.length; ri++) {
+    var ruota = RUOTE[ri];
+    var data = engine(ruota);
+    if (!data || !data.total) continue;
+
+    var byScore = data.nums.slice().sort(function(a,b){return b.score-a.score;});
+    var byFreq  = data.nums.slice().sort(function(a,b){return b.freq-a.freq;});
+    var byRit   = data.nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
+
+    // Ambo consigliato: top 2 per score
+    var ambo = [byScore[0].n, byScore[1].n];
+    // Terno: top 2 score + 1 ritardatario
+    var terno = [byScore[0].n, byScore[1].n];
+    for (var i=0;i<byRit.length;i++) {
+      if (terno.indexOf(byRit[i].n) < 0) { terno.push(byRit[i].n); break; }
+    }
+    // Top 5 per score
+    var top5 = byScore.slice(0,5).map(function(x){return x.n;});
+    // Numero piu frequente in assoluto
+    var topFreq = byFreq[0].n;
+    // Numero piu ritardatario
+    var topRit = byRit[0];
+
+    ruoteData.push({
+      ruota: ruota,
+      total: data.total,
+      top5: top5,
+      ambo: ambo,
+      terno: terno,
+      topFreq: topFreq,
+      topRit: topRit,
+      score0: byScore[0].score,
+      coppie: data.coppie.slice(0,3)
+    });
+  }
+
+  // Trova numeri che escono su piu ruote (numeri "universali")
+  var numCount = {};
+  for (var ri=0;ri<ruoteData.length;ri++) {
+    var top5 = ruoteData[ri].top5;
+    for (var i=0;i<top5.length;i++) {
+      numCount[top5[i]] = (numCount[top5[i]]||0)+1;
+    }
+  }
+  var universal = [];
+  for (var n in numCount) {
+    if (numCount[n] >= 3) universal.push({n:parseInt(n), count:numCount[n]});
+  }
+  universal.sort(function(a,b){return b.count-a.count;});
+
+  function ball(n, col, size) {
+    col = col || sc(60);
+    size = size || 32;
+    var fs = Math.round(size*0.38);
+    return '<div class="nb" style="width:'+size+'px;height:'+size+'px;font-size:'+fs+'px;'
+      +'border:1.5px solid '+col+';color:'+col+';background:'+col+'18;flex-shrink:0">'+n+'</div>';
+  }
+
+  // ── SEZIONE 1: Numeri universali ─────────────────────────────────────
+  var univHtml = '';
+  if (universal.length) {
+    for (var i=0;i<Math.min(10,universal.length);i++) {
+      var u = universal[i];
+      var col = u.count>=8?'#c9a227':u.count>=6?'#e87b2a':u.count>=4?'#57cc99':'#457b9d';
+      univHtml += '<div style="text-align:center;background:#09091a;border:1px solid '+col+'44;border-radius:10px;padding:10px 14px;min-width:70px">'
+        +'<div style="font-family:monospace;font-size:22px;font-weight:700;color:'+col+'">'+u.n+'</div>'
+        +'<div style="font-size:9px;color:#9999bb;margin-top:3px;font-family:monospace">'+u.count+'/11 ruote</div>'
+        +'</div>';
+    }
+  }
+
+  // ── SEZIONE 2: Card per ogni ruota ───────────────────────────────────
+  var cardsHtml = '';
+  for (var ri=0;ri<ruoteData.length;ri++) {
+    var d = ruoteData[ri];
+    var top5balls = '';
+    for (var i=0;i<d.top5.length;i++) {
+      var col = i===0?sc(d.score0):sc(Math.max(40,d.score0-i*8));
+      top5balls += ball(d.top5[i], col, i===0?40:32);
+    }
+    var amboBalls = '<div style="display:flex;gap:5px;align-items:center">'
+      +ball(d.ambo[0],'#57cc99',30)+ball(d.ambo[1],'#57cc99',30)+'</div>';
+    var ternoBalls = '<div style="display:flex;gap:5px;align-items:center">'
+      +ball(d.terno[0],'#c9a227',30)+ball(d.terno[1],'#c9a227',30)+ball(d.terno[2],'#c9a227',30)+'</div>';
+
+    // Top 3 coppie
+    var coppieStr = '';
+    for (var i=0;i<d.coppie.length;i++) {
+      var cp = d.coppie[i];
+      coppieStr += '<span style="font-family:monospace;font-size:10px;color:#c9a227;background:rgba(201,162,39,.1);'
+        +'border:1px solid rgba(201,162,39,.3);border-radius:4px;padding:2px 7px;margin:1px">'
+        +cp.a+'-'+cp.b+'</span>';
+    }
+
+    cardsHtml += '<div class="card" style="border:1px solid #1c1c2e">'
+      // Header ruota
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+      +'<div style="font-family:monospace;font-size:13px;font-weight:700;color:var(--stc)">'+d.ruota.toUpperCase()+'</div>'
+      +'<div style="font-family:monospace;font-size:9px;color:#9999bb">'+d.total+' estr.</div>'
+      +'</div>'
+      // Top 5
+      +'<div style="margin-bottom:10px">'
+      +'<div style="font-size:9px;color:#9999bb;font-family:monospace;letter-spacing:1px;margin-bottom:5px">TOP 5 SCORE</div>'
+      +'<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">'+top5balls+'</div>'
+      +'</div>'
+      // Giocate consigliate
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+      +'<div style="background:#09091a;border-radius:7px;padding:8px">'
+      +'<div style="font-size:9px;color:#57cc99;font-family:monospace;margin-bottom:5px">AMBO CONSIGLIATO</div>'
+      +amboBalls+'</div>'
+      +'<div style="background:#09091a;border-radius:7px;padding:8px">'
+      +'<div style="font-size:9px;color:#c9a227;font-family:monospace;margin-bottom:5px">TERNO CONSIGLIATO</div>'
+      +ternoBalls+'</div>'
+      +'</div>'
+      // Ritardatario + coppie
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">'
+      +'<div>'
+      +'<div style="font-size:9px;color:#e63946;font-family:monospace;margin-bottom:4px">PIU ASSENTE</div>'
+      +'<div style="display:flex;align-items:center;gap:5px">'
+      +ball(d.topRit.n,'#e63946',28)
+      +'<span style="font-size:10px;color:#9999bb">'+d.topRit.ritardo+' estr.</span>'
+      +'</div></div>'
+      +'<div>'
+      +'<div style="font-size:9px;color:#9999bb;font-family:monospace;margin-bottom:4px">COPPIE FREQUENTI</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:2px">'+coppieStr+'</div>'
+      +'</div></div>'
+      +'</div>';
+  }
+
+  // ── TABELLA RIASSUNTIVA ──────────────────────────────────────────────
+  var tableRows = '';
+  for (var ri=0;ri<ruoteData.length;ri++) {
+    var d = ruoteData[ri];
+    tableRows += '<tr style="border-bottom:1px solid #1c1c2e">'
+      +'<td style="padding:7px 10px;font-family:monospace;font-size:11px;color:var(--stc);font-weight:700">'+d.ruota+'</td>'
+      +'<td style="padding:7px 10px">'
+      +'<div style="display:flex;gap:3px">'+d.top5.slice(0,3).map(function(n){return ball(n,sc(55),26);}).join('')+'</div>'
+      +'</td>'
+      +'<td style="padding:7px 10px">'
+      +'<div style="display:flex;gap:3px">'+d.ambo.map(function(n){return ball(n,'#57cc99',26);}).join('')+'</div>'
+      +'</td>'
+      +'<td style="padding:7px 10px">'
+      +'<div style="display:flex;gap:3px">'+d.terno.map(function(n){return ball(n,'#c9a227',26);}).join('')+'</div>'
+      +'</td>'
+      +'<td style="padding:7px 6px;font-family:monospace;font-size:11px;color:#e63946">'
+      +ball(d.topRit.n,'#e63946',26)
+      +'</td>'
+      +'</tr>';
+  }
+
+  document.getElementById('p-all').innerHTML =
+    // Numeri universali
+    (universal.length ? '<div class="cgold" style="margin-bottom:14px">'
+      +'<div class="st">Numeri che escono su piu ruote (top score su almeno 3 ruote)</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">'+univHtml+'</div>'
+      +'<p style="font-size:12px;color:#9999bb">Questi numeri hanno alto score su piu ruote contemporaneamente — candidati per una giocata su piu ruote.</p>'
+      +'</div>' : '')
+
+    // Tabella riassuntiva
+    +'<div class="card" style="margin-bottom:14px;overflow-x:auto">'
+    +'<div class="st">Riepilogo tutte le ruote</div>'
+    +'<table style="width:100%;border-collapse:collapse">'
+    +'<thead><tr style="border-bottom:2px solid rgba(201,162,39,.3)">'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#9999bb;text-align:left;font-weight:normal;letter-spacing:1px">RUOTA</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#9999bb;text-align:left;font-weight:normal;letter-spacing:1px">TOP 3</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#57cc99;text-align:left;font-weight:normal;letter-spacing:1px">AMBO</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#c9a227;text-align:left;font-weight:normal;letter-spacing:1px">TERNO</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#e63946;text-align:left;font-weight:normal;letter-spacing:1px">ASSENTE</th>'
+    +'</tr></thead>'
+    +'<tbody>'+tableRows+'</tbody>'
+    +'</table></div>'
+
+    // Card dettagliate per ruota
+    +'<div class="st">Dettaglio per ruota</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">'
+    +cardsHtml+'</div>'
+
+    // Disclaimer
+    +'<div style="background:rgba(230,57,70,.06);border:1px solid rgba(230,57,70,.18);border-radius:8px;padding:10px 14px;margin-top:14px">'
+    +'<span style="font-size:12px;color:#9999bb">Analisi statistica sui dati storici. Non garantisce vincite. Il lotto e un gioco d azzardo. Gioca responsabilmente.</span>'
+    +'</div>';
+}
+
+// ============================================================
+// ASPETTO / SETTINGS
+// ============================================================
+var DEFS = {fs:15,fc:'#e8e8f0',ta:'left',ic:36,stc:'#c9a227',lbc:'#9999bb',tabc:'#7777aa',s1:'#c9a227',s2:'#e87b2a',s3:'#e9c46a',s4:'#6aaccc'};
+var CFG = {};
+try {
+  CFG = JSON.parse(localStorage.getItem('lottocfg')||'{}');
+  // Se lbc e ancora il vecchio valore scuro, aggiorna al nuovo piu leggibile
+  if (CFG.lbc === '#555570') CFG.lbc = DEFS.lbc;
+  if (CFG.tabc === '#444460') CFG.tabc = DEFS.tabc;
+  if (CFG.s4 === '#457b9d') CFG.s4 = DEFS.s4;
+  if (CFG.fs <= 14) CFG.fs = DEFS.fs;
+} catch(e) { CFG = {}; }
+for (var k in DEFS) { if (!(k in CFG)) CFG[k] = DEFS[k]; }
+
+function applyCSS() {
+  var r = document.documentElement.style;
+  r.setProperty('--fs', CFG.fs+'px');
+  r.setProperty('--fc', CFG.fc);
+  r.setProperty('--ta', CFG.ta);
+  r.setProperty('--ic', CFG.ic+'px');
+  r.setProperty('--icf', Math.round(CFG.ic*0.35)+'px');
+  r.setProperty('--stc', CFG.stc);
+  r.setProperty('--lbc', CFG.lbc);
+  r.setProperty('--tabc', CFG.tabc);
+  r.setProperty('--s1', CFG.s1);
+  r.setProperty('--s2', CFG.s2);
+  r.setProperty('--s3', CFG.s3);
+  r.setProperty('--s4', CFG.s4);
+}
+
+function saveCFG() { try{localStorage.setItem('lottocfg',JSON.stringify(CFG));}catch(e){} applyCSS(); }
+
+function setC(k,v) { CFG[k]=v; saveCFG(); renderSet(); }
+function setC2(k,v) { CFG[k]=v; applyCSS(); }  // solo CSS, no re-render (per oninput)
+
+function renderSet() {
+  var PAL = ['#c9a227','#e87b2a','#e63946','#9b59b6','#57cc99','#457b9d','#ffffff','#e8e8f0'];
+  var PAL2 = ['#444460','#555570','#666680','#888899','#aaaacc','#c9a227','#57cc99','#ffffff'];
+  var PAL3 = ['#c9a227','#e87b2a','#e9c46a','#457b9d','#57cc99','#e63946','#9b59b6','#ffffff'];
+
+  function dots(pal, key) {
+    var h='';
+    for(var i=0;i<pal.length;i++) {
+      var col=pal[i], active=CFG[key]===col;
+      h+='<span class="cdot" style="background:'+col+';border-color:'+(active?'#fff':'transparent')+'" onclick="setC(\''+key+'\',\''+col+'\')"></span>';
+    }
+    return h;
+  }
+  function crow(key, lbl, pal, prev) {
+    return '<div style="background:#09091a;border-radius:8px;padding:11px;border:1px solid '+CFG[key]+'44">'
+      +'<div style="font-size:11px;color:#aaa;margin-bottom:6px">'+lbl+'</div>'
+      +'<div style="font-size:12px;color:'+CFG[key]+';margin-bottom:8px;font-family:monospace">'+prev+'</div>'
+      +'<div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin-bottom:8px">'
+      +dots(pal,key)
+      +'<input type="color" value="'+CFG[key]+'" oninput="setC2(\''+key+'\',this.value)" onchange="setC(\''+key+'\',this.value)">'
+      +'</div>'
+      +'<button class="bgh" onclick="setC(\''+key+'\',\''+DEFS[key]+'\')" style="font-size:9px;padding:3px 7px">Reset</button>'
+      +'</div>';
+  }
+
+  var alignBtns = '';
+  var aligns = [['left','Sinistra'],['center','Centro'],['right','Destra']];
+  for(var i=0;i<aligns.length;i++) {
+    var v=aligns[i][0], l=aligns[i][1], active=CFG.ta===v;
+    alignBtns += '<button onclick="setC(\'ta\',\''+v+'\')" style="padding:7px 14px;border-radius:7px;cursor:pointer;font-family:monospace;font-size:10px;border:1px solid '+(active?'var(--stc)':'#1c1c2e')+';background:'+(active?'rgba(201,162,39,.15)':'transparent')+';color:'+(active?'var(--stc)':'var(--lbc)')+'">'+l+'</button>';
+  }
+
+  document.getElementById('p-set').innerHTML =
+    '<div class="card" style="margin-bottom:12px">'
+    +'<div class="st">Dimensione testo</div>'
+    +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+    +'<button class="bgh" onclick="CFG.fs=Math.max(10,CFG.fs-1);saveCFG();renderSet()" style="font-size:18px;padding:3px 12px">A-</button>'
+    +'<span style="font-family:monospace;font-size:18px;color:var(--stc);min-width:44px;text-align:center">'+CFG.fs+'px</span>'
+    +'<button class="bgh" onclick="CFG.fs=Math.min(24,CFG.fs+1);saveCFG();renderSet()" style="font-size:18px;padding:3px 12px">A+</button>'
+    +'<button class="bgh" onclick="CFG.fs=DEFS.fs;saveCFG();renderSet()">Reset</button>'
+    +'</div></div>'
+    +'<div class="card" style="margin-bottom:12px">'
+    +'<div class="st">Dimensione pallini</div>'
+    +'<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">'
+    +'<button class="bgh" onclick="CFG.ic=Math.max(24,CFG.ic-4);saveCFG();renderSet()" style="font-size:18px;padding:3px 12px">-</button>'
+    +'<div class="nb sm" style="flex-shrink:0">42</div>'
+    +'<button class="bgh" onclick="CFG.ic=Math.min(60,CFG.ic+4);saveCFG();renderSet()" style="font-size:18px;padding:3px 12px">+</button>'
+    +'<span style="font-family:monospace;font-size:10px;color:var(--lbc)">'+CFG.ic+'px</span>'
+    +'<button class="bgh" onclick="CFG.ic=DEFS.ic;saveCFG();renderSet()">Reset</button>'
+    +'</div></div>'
+    +'<div class="card" style="margin-bottom:12px">'
+    +'<div class="st">Allineamento testo</div>'
+    +'<div style="display:flex;gap:8px;flex-wrap:wrap">'+alignBtns+'</div></div>'
+    +'<div class="card" style="margin-bottom:12px">'
+    +'<div class="st">Colori testo e interfaccia</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">'
+    +crow('stc','Titoli con icona',PAL,'ESEMPIO TITOLO SEZIONE')
+    +crow('lbc','Etichette secondarie',PAL2,'Uscite - Ritardo - Data')
+    +crow('tabc','Tab non selezionato',PAL2,'TAB INATTIVO')
+    +crow('fc','Testo principale',PAL,'Testo normale del programma')
+    +'</div></div>'
+    +'<div class="card" style="margin-bottom:12px">'
+    +'<div class="st">Colori score - righe previsioni</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">'
+    +crow('s1','Score alto 68% e oltre',PAL3,'Numero con score alto')
+    +crow('s2','Score medio-alto 52-68%',PAL3,'Numero con score medio-alto')
+    +crow('s3','Score medio 38-52%',PAL3,'Numero con score medio')
+    +crow('s4','Score basso sotto 38%',PAL3,'Numero con score basso')
+    +'</div></div>'
+    +'<div class="card" style="text-align:center">'
+    +'<button class="bgold" onclick="for(var k in DEFS)CFG[k]=DEFS[k];saveCFG();renderSet()">Ripristina tutto</button>'
+    +'<div style="font-family:monospace;font-size:9px;color:#7777aa;margin-top:8px">Impostazioni salvate automaticamente</div>'
+    +'</div>';
+}
+
+// ============================================================
+// BACKUP
+// ============================================================
+function exportData() {
+  if (!allDraws.length) { alert('Nessun dato da esportare.'); return; }
+  var lines = [];
+  for (var i=0;i<allDraws.length;i++) {
+    var d = allDraws[i];
+    lines.push(d.date+'\t'+d.concorso+'\t'+d.ruota+'\t'+d.nums.join('\t'));
+  }
+  var blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var today = new Date().toISOString().slice(0,10);
+  a.href=url; a.download='lotto_backup_'+today+'.tsv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  alert('Backup salvato: '+allDraws.length+' estrazioni.');
+}
+
+function importData(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  document.getElementById('p-prev').innerHTML = '<div style="text-align:center;padding:60px 20px">'
+    +'<div class="pl" style="font-family:monospace;font-size:15px;color:#c9a227;letter-spacing:3px;margin-bottom:16px">LETTURA FILE...</div>'
+    +'<div style="font-size:12px;color:#9999bb">Attendere prego</div></div>';
+  for(var t of['cop','sch','rit','arc','lot','set']) document.getElementById('p-'+t).style.display='none';
+  document.getElementById('p-prev').style.display='';
+  setTimeout(function() {
+    file.text().then(function(text) {
+      var imported = parse(text);
+      if (!imported.length) { alert('File non valido. Usa il .tsv esportato con Backup.'); renderAll(); return; }
+      var years = [];
+      var ym = {};
+      for(var i=0;i<imported.length;i++){var y=getYear(imported[i]);if(!ym[y]){ym[y]=1;years.push(y);}}
+      years.sort();
+      document.getElementById('p-prev').innerHTML = '<div style="text-align:center;padding:60px 20px">'
+        +'<div style="font-family:monospace;font-size:13px;color:#c9a227;letter-spacing:2px;margin-bottom:12px">FILE LETTO</div>'
+        +'<div style="font-size:14px;color:#e8e8f0;margin-bottom:6px">'+imported.length+' estrazioni</div>'
+        +'<div style="font-size:12px;color:#666680;margin-bottom:20px">Anni: '+years.join(', ')+'</div>'
+        +'<div class="pl" style="font-family:monospace;font-size:12px;color:#e87b2a;letter-spacing:2px">SALVATAGGIO...</div></div>';
+      setTimeout(function() {
+        var seen = {};
+        for(var i=0;i<allDraws.length;i++) seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;
+        var newOnes = [];
+        for(var i=0;i<imported.length;i++) {
+          var d=imported[i];
+          if(!seen[d.date+'|'+d.ruota]) { newOnes.push(d); seen[d.date+'|'+d.ruota]=1; }
+        }
+        var merged = allDraws.concat(newOnes);
+        dbSaveAll(merged).then(function() {
+          allDraws = merged;
+          for(var t of['cop','sch','rit','arc','lot','set']) document.getElementById('p-'+t).style.display='none';
+          document.getElementById('p-prev').style.display='';
+          renderAll();
+          alert('Ripristino completato!\n'+newOnes.length+' estrazioni importate.\nAnni: '+years.join(', '));
+        }).catch(function(e) { alert('Errore salvataggio: '+e.message); renderAll(); });
+      }, 80);
+    }).catch(function(e) { alert('Errore lettura: '+e.message); renderAll(); });
+  }, 80);
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+var parsedData = [];
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('ta').value = '';
+  document.getElementById('minfo').innerHTML = '';
+  var bs = document.getElementById('bsave');
+  bs.style.display='none'; bs.disabled=false; bs.textContent='Salva dati';
+  parsedData = [];
+}
+
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+function doAnalyze() {
+  parsedData = parse(document.getElementById('ta').value);
+  if (!parsedData.length) {
+    document.getElementById('minfo').innerHTML = '<div class="ebox">Nessun dato valido. Verifica il formato TSV.</div>';
+    document.getElementById('bsave').style.display = 'none'; return;
+  }
+  var years=[]; var ym={};
+  for(var i=0;i<parsedData.length;i++){var y=getYear(parsedData[i]);if(!ym[y]){ym[y]=1;years.push(y);}}
+  years.sort();
+  var ruote=[]; var rm={};
+  for(var i=0;i<parsedData.length;i++){var r=parsedData[i].ruota;if(!rm[r]){rm[r]=1;ruote.push(r);}}
+  document.getElementById('minfo').innerHTML = '<div class="ibox">OK: '+parsedData.length+' righe - Anni: '+years.join(', ')+' - '+ruote.length+'/11 ruote</div>';
+  document.getElementById('bsave').style.display = 'inline-block';
+}
+
+function doSave() {
+  if (!parsedData.length) return;
+  var btn = document.getElementById('bsave');
+  btn.disabled=true; btn.textContent='Salvataggio...';
+  var seen={};
+  for(var i=0;i<allDraws.length;i++) seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;
+  var newOnes=[];
+  for(var i=0;i<parsedData.length;i++){
+    var d=parsedData[i];
+    if(!seen[d.date+'|'+d.ruota]){newOnes.push(d);seen[d.date+'|'+d.ruota]=1;}
+  }
+  var merged = allDraws.concat(newOnes);
+  dbSaveAll(merged).then(function() {
+    allDraws=merged; closeModal(); renderAll();
+    setTimeout(function(){alert('Salvate '+newOnes.length+' nuove estrazioni ('+(parsedData.length-newOnes.length)+' duplicati ignorati).');},100);
+  }).catch(function(e){
+    document.getElementById('minfo').innerHTML='<div class="ebox">Errore: '+e.message+'</div>';
+    btn.disabled=false; btn.textContent='Salva dati';
+  });
+}
+
+function doClearAll() {
+  if (!confirm('Cancellare TUTTI i dati?')) return;
+  dbClearAll().then(function(){ allDraws=[]; closeModal(); renderAll(); });
+}
+
+function delYear(y) {
+  if (!confirm('Eliminare '+y+'?')) return;
+  var filtered=[];
+  for(var i=0;i<allDraws.length;i++) if(getYear(allDraws[i])!==y) filtered.push(allDraws[i]);
+  dbSaveAll(filtered).then(function(){ allDraws=filtered; renderAll(); });
+}
+
+// ============================================================
+// NAVIGAZIONE
+// ============================================================
+function goTab(id, btn) {
+  var tabs = document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('a');
+  btn.classList.add('a');
+  var panels = ['prev','cop','sch','rit','arc','lot','all','set'];
+  for(var i=0;i<panels.length;i++)
+    document.getElementById('p-'+panels[i]).style.display = panels[i]===id ? '' : 'none';
+}
+
+// ============================================================
+// AVVIO
+// ============================================================
+(function init() {
+  applyCSS();
+  document.getElementById('p-prev').innerHTML = '<div class="pl" style="text-align:center;padding:40px;font-family:monospace;font-size:12px;color:#c9a227;letter-spacing:2px">CARICAMENTO...</div>';
+
+  openDB().then(function() {
+    return dbGetAll();
+  }).then(function(rows) {
+    allDraws = rows;
+    if (!allDraws.length) {
+      // Cerca nei vecchi database
+      return Promise.all([readOldDB('lottoDB'), readOldDB('lottoDB3')]).then(function(results) {
+        var combined = results[0].concat(results[1]);
+        if (!combined.length) return;
+        var seen={}, unique=[];
+        for(var i=0;i<combined.length;i++) {
+          var d=combined[i];
+          if(d.date&&d.ruota&&d.nums){var k=d.date+'|'+d.ruota;if(!seen[k]){seen[k]=1;unique.push(d);}}
+        }
+        if (!unique.length) return;
+        return dbSaveAll(unique).then(function(){ return dbGetAll(); }).then(function(r){ allDraws=r; });
+      });
+    }
+  }).then(function() {
+    renderAll();
+  }).catch(function(e) {
+    document.getElementById('p-prev').innerHTML = '<div class="card" style="border-color:#e63946;color:#e63946;max-width:400px;margin:0 auto;text-align:center;padding:30px">Errore avvio: '+e.message+'</div>';
+  });
+})();
+</script>
+</body>
+</html>
