@@ -317,15 +317,12 @@ function renderAll() {
   }
   if (allDraws.length) h += '<span style="font-family:monospace;font-size:9px;color:#6666aa">'+allDraws.length+' righe</span>';
   document.getElementById('yrow').innerHTML = h;
-  // Mostra info ultimo aggiornamento server
-  var luEl = document.getElementById('last-update');
-  var uiEl = document.getElementById('update-info');
-  if (!luEl) {
-    var infoDiv = document.createElement('div');
-    infoDiv.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';
-    infoDiv.innerHTML = '<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span>'
-      + '<span id="update-info" style="font-family:monospace;font-size:9px;color:#57cc99"></span>'
-      + '<button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">&#8635; Aggiorna dati</button>';
+  if(!document.getElementById('last-update')){
+    var infoDiv=document.createElement('div');
+    infoDiv.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';
+    infoDiv.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span>'
+      +'<span id="update-info" style="font-family:monospace;font-size:9px;color:#57cc99"></span>'
+      +'<button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna dati</button>';
     document.getElementById('yrow').appendChild(infoDiv);
   }
 
@@ -704,21 +701,30 @@ function renderLot(data, years) {
   }
 
   // Budget
+  // Vincite ufficiali Lottomatica per euro giocato
+  // Cinquina: premio FISSO massimo 6.000.000 euro (non moltiplicato)
+  // Limite totale per schedina: 6.000.000 euro
   var BINFO = [
-    {id:'ambo',     label:'Ambo',     pay:250,     prob:'1 su 400',     col:'#57cc99', pct:budgetPcts.ambo},
-    {id:'terno',    label:'Terno',    pay:4500,    prob:'1 su 11.748',  col:'#c9a227', pct:budgetPcts.terno},
-    {id:'quaterna', label:'Quaterna', pay:120000,  prob:'1 su 511.038', col:'#e87b2a', pct:budgetPcts.quaterna},
-    {id:'cinquina', label:'Cinquina', pay:1000000, prob:'1 su 43 mln',  col:'#9b59b6', pct:budgetPcts.cinquina}
+    {id:'ambo',     label:'Ambo',     pay:250,     prob:'1 su 400',      col:'#57cc99', pct:budgetPcts.ambo,     maxWin:null},
+    {id:'terno',    label:'Terno',    pay:4500,    prob:'1 su 11.748',   col:'#c9a227', pct:budgetPcts.terno,    maxWin:null},
+    {id:'quaterna', label:'Quaterna', pay:120000,  prob:'1 su 511.038',  col:'#e87b2a', pct:budgetPcts.quaterna, maxWin:null},
+    {id:'cinquina', label:'Cinquina', pay:6000000, prob:'1 su 43 mln',   col:'#9b59b6', pct:budgetPcts.cinquina, maxWin:6000000, fixed:true}
   ];
 
   var bcards = '';
   var totUsed = 0;
+  var totWin = 0;
   for(var i=0;i<BINFO.length;i++) {
     var g = BINFO[i];
     var eur = Math.max(1, Math.round(budgetTot * g.pct / 100));
     totUsed += eur;
-    var win = (eur * g.pay).toLocaleString('it-IT');
-    bcards += '<div style="background:#09091a;border:1px solid '+g.col+'44;border-radius:10px;padding:12px">'
+    // Cinquina: premio fisso 6.000.000 euro (non moltiplicato per importo)
+    var winVal = g.fixed ? g.maxWin : (eur * g.pay);
+    totWin += winVal;
+    var win = winVal.toLocaleString('it-IT');
+    var winLabel = g.fixed ? 'PREMIO FISSO MASSIMO' : 'VINCITA POTENZIALE';
+    var overLimit = totWin > 6000000;
+    bcards += '<div style="background:#09091a;border:1px solid '+(overLimit?'#e63946':g.col)+'44;border-radius:10px;padding:12px">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
       +'<span style="font-family:monospace;font-size:11px;color:'+g.col+';font-weight:700">'+g.label+'</span>'
       +'<span style="font-size:9px;color:var(--lbc)">'+g.prob+'</span>'
@@ -729,8 +735,9 @@ function renderLot(data, years) {
       +'<button onclick="adjBgt(\''+g.id+'\',+1)" style="background:#0d0d1c;border:1px solid #1c1c2e;color:#aaa;border-radius:5px;width:28px;height:28px;cursor:pointer;font-size:16px;line-height:1;flex-shrink:0">+</button>'
       +'</div>'
       +'<div style="background:#0d0d1c;border-radius:6px;padding:7px 10px;margin-bottom:5px">'
-      +'<div style="font-size:9px;color:var(--lbc);margin-bottom:2px">VINCITA POTENZIALE</div>'
+      +'<div style="font-size:9px;color:var(--lbc);margin-bottom:2px">'+winLabel+'</div>'
       +'<div style="font-family:monospace;font-size:15px;color:'+g.col+';font-weight:700">'+win+' euro</div>'
+      +(g.fixed?'<div style="font-size:9px;color:#9b59b6;margin-top:2px">Indipendente dalla puntata</div>':'')
       +'</div>'
       +'<div style="display:flex;align-items:center;gap:6px">'
       +'<div style="flex:1;background:#1a1a2e;border-radius:3px;height:4px;overflow:hidden">'
@@ -748,6 +755,7 @@ function renderLot(data, years) {
   }
 
   var totCol = totUsed===budgetTot ? '#57cc99' : '#e87b2a';
+  var capOk = totWin <= 6000000;
   var cons = budgetTot<=5 ? 'Con meno di 5 euro punta su ambo - il piu probabile.'
            : budgetTot<=20 ? 'Budget medio: ambo e terno sono le giocate piu bilanciate.'
            : 'Budget alto: considera una quaterna mantenendo copertura con ambo.';
@@ -782,9 +790,21 @@ function renderLot(data, years) {
     +'<span style="font-family:monospace;font-size:10px;color:var(--lbc)">TOTALE ALLOCATO</span>'
     +'<span style="font-family:monospace;font-size:16px;color:'+totCol+';font-weight:700">'+totUsed+' / '+budgetTot+' euro</span>'
     +'</div>'
-    +'<div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.2);border-radius:8px;padding:10px 14px">'
+    +'<div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.2);border-radius:8px;padding:10px 14px;margin-bottom:8px">'
     +'<span style="font-size:12px;color:var(--fc)">Consiglio: '+cons+'</span>'
-    +'</div></div>';
+    +'</div>'
+    +(capOk
+      ? '<div style="background:rgba(87,204,153,.06);border:1px solid rgba(87,204,153,.3);border-radius:8px;padding:10px 14px">'
+        +'<div style="font-size:11px;color:#57cc99;font-family:monospace;margin-bottom:3px">LIMITE LOTTOMATICA: OK</div>'
+        +'<div style="font-size:12px;color:var(--lbc)">Vincita potenziale totale: '+totWin.toLocaleString('it-IT')+' euro (sotto il limite di 6.000.000)</div>'
+        +'</div>'
+      : '<div style="background:rgba(230,57,70,.08);border:1px solid rgba(230,57,70,.4);border-radius:8px;padding:10px 14px">'
+        +'<div style="font-size:11px;color:#e63946;font-family:monospace;margin-bottom:3px">ATTENZIONE - LIMITE LOTTOMATICA SUPERATO</div>'
+        +'<div style="font-size:12px;color:var(--lbc);margin-bottom:6px">Vincita potenziale totale: '+totWin.toLocaleString('it-IT')+' euro supera il limite di 6.000.000 euro per schedina.</div>'
+        +'<div style="font-size:11px;color:#e63946">Riduci la puntata su Quaterna o Cinquina.</div>'
+        +'</div>'
+    )
+    +'</div>';
 }
 
 function adjBgt(id, delta) {
@@ -1084,82 +1104,55 @@ function goTab(id, btn) {
   });
 })();
 </script>
+
 <script>
-// ── SERVICE WORKER (PWA) ──────────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').then(function(reg) {
-    console.log('SW registrato');
-    // Ascolta aggiornamenti dati dal service worker
-    navigator.serviceWorker.addEventListener('message', function(e) {
-      if (e.data && e.data.type === 'DATA_UPDATED') {
-        loadServerData();
-      }
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(function(){
+    navigator.serviceWorker.addEventListener('message',function(e){
+      if(e.data&&e.data.type==='DATA_UPDATED') loadServerData();
     });
   });
 }
-
-// ── CARICA DATI DAL SERVER (latest.json) ─────────────────────────────────
-var SERVER_DATA_LOADED = false;
-
-function loadServerData() {
-  fetch('./data/latest.json?t=' + Date.now())
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      var draws = data.draws || [];
-      if (!draws.length) return;
-
-      // Merge con dati locali (IndexedDB)
-      var seen = {};
-      for (var i = 0; i < allDraws.length; i++) {
-        seen[allDraws[i].date + '|' + allDraws[i].ruota] = 1;
+function loadServerData(){
+  fetch('./data/latest.json?t='+Date.now())
+    .then(function(r){return r.json();})
+    .then(function(data){
+      var draws=data.draws||[];
+      if(!draws.length)return;
+      var seen={};
+      for(var i=0;i<allDraws.length;i++) seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;
+      var newOnes=[];
+      for(var i=0;i<draws.length;i++){
+        var d=draws[i];
+        if(d.date&&d.ruota&&d.nums&&!seen[d.date+'|'+d.ruota]){newOnes.push(d);seen[d.date+'|'+d.ruota]=1;}
       }
-      var newOnes = [];
-      for (var i = 0; i < draws.length; i++) {
-        var d = draws[i];
-        if (d.date && d.ruota && d.nums && !seen[d.date + '|' + d.ruota]) {
-          newOnes.push(d);
-          seen[d.date + '|' + d.ruota] = 1;
-        }
-      }
-
-      if (newOnes.length > 0) {
-        var merged = allDraws.concat(newOnes);
-        dbSaveAll(merged).then(function() {
-          allDraws = merged;
+      if(newOnes.length>0){
+        var merged=allDraws.concat(newOnes);
+        dbSaveAll(merged).then(function(){
+          allDraws=merged;
           renderAll();
-          var el = document.getElementById('update-info');
-          if (el) el.textContent = '+' + newOnes.length + ' nuove estrazioni caricate';
+          var el=document.getElementById('update-info');
+          if(el) el.textContent='+'+newOnes.length+' nuove estrazioni';
         });
       }
-
-      SERVER_DATA_LOADED = true;
-      var ul = document.getElementById('last-update');
-      if (ul && data.last_update) ul.textContent = 'Aggiornato: ' + data.last_update;
-    })
-    .catch(function() {}); // silenzioso se offline
+      var ul=document.getElementById('last-update');
+      if(ul&&data.last_update) ul.textContent='Aggiornato: '+data.last_update;
+    }).catch(function(){});
 }
-
-// Carica dati server all'avvio (dopo IndexedDB)
-document.addEventListener('DOMContentLoaded', function() {
-  setTimeout(loadServerData, 1500);
+setTimeout(loadServerData,1500);
+var installPrompt=null;
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();installPrompt=e;
+  var b=document.getElementById('install-banner');
+  if(b) b.style.display='flex';
 });
-
-// ── INSTALL PROMPT (Android) ──────────────────────────────────────────────
-var installPrompt = null;
-window.addEventListener('beforeinstallprompt', function(e) {
-  e.preventDefault();
-  installPrompt = e;
-  var banner = document.getElementById('install-banner');
-  if (banner) banner.style.display = 'flex';
-});
-
-function installApp() {
-  if (!installPrompt) return;
+function installApp(){
+  if(!installPrompt)return;
   installPrompt.prompt();
-  installPrompt.userChoice.then(function() {
-    installPrompt = null;
-    var banner = document.getElementById('install-banner');
-    if (banner) banner.style.display = 'none';
+  installPrompt.userChoice.then(function(){
+    installPrompt=null;
+    var b=document.getElementById('install-banner');
+    if(b) b.style.display='none';
   });
 }
 </script>
