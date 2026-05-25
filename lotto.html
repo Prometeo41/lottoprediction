@@ -342,8 +342,6 @@ function renderAll() {
   years.sort();
 
   var h = '<button class="bgold" style="font-size:9px;padding:5px 12px" onclick="openModal()">+ Carica estrazioni</button>';
-  h += '<button class="bgh" style="border-color:#57cc99;color:#57cc99;font-size:9px;padding:5px 10px" onclick="exportData()">Backup</button>';
-  h += '<label style="border:1px solid #457b9d;color:#457b9d;border-radius:6px;padding:5px 10px;font-family:monospace;font-size:9px;cursor:pointer">Ripristina<input type="file" accept=".tsv,.txt" onchange="importData(event)" style="display:none"></label>';
   for (var i=0;i<years.length;i++) {
     h += '<span class="tag">'+years[i]+'<button onclick="delYear(\''+years[i]+'\')">x</button></span>';
   }
