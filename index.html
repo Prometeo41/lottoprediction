@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#c9a227">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="LottoPred">
 <title>Lotto Prediction Engine - by Peppe Iermano</title>
 <link rel="manifest" href="manifest.json">
@@ -67,15 +66,7 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
 <body>
 <div class="hdr">
   <h1 style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
-    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="22" viewBox="0 0 32 22" style="display:inline-block;vertical-align:middle;border:1px solid #888;border-radius:2px;margin-right:6px">
-  <!-- Sfondo bianco -->
-  <rect width="32" height="22" fill="#fff"/>
-  <!-- Croce dorata -->
-  <rect x="13" y="0" width="6" height="22" fill="#c9a227" opacity="0.9"/>
-  <rect x="0" y="8" width="32" height="6" fill="#c9a227" opacity="0.9"/>
-  <!-- Giglio borbonico centrale -->
-  <text x="16" y="14" text-anchor="middle" font-size="9" fill="#06060e">&#8258;</text>
-</svg>
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAqCAIAAABdg87FAAABCGlDQ1BJQ0MgUHJvZmlsZQAAeJxjYGA8wQAELAYMDLl5JUVB7k4KEZFRCuwPGBiBEAwSk4sLGHADoKpv1yBqL+viUYcLcKakFicD6Q9ArFIEtBxopAiQLZIOYWuA2EkQtg2IXV5SUAJkB4DYRSFBzkB2CpCtkY7ETkJiJxcUgdT3ANk2uTmlyQh3M/Ck5oUGA2kOIJZhKGYIYnBncAL5H6IkfxEDg8VXBgbmCQixpJkMDNtbGRgkbiHEVBYwMPC3MDBsO48QQ4RJQWJRIliIBYiZ0tIYGD4tZ2DgjWRgEL7AwMAVDQsIHG5TALvNnSEfCNMZchhSgSKeDHkMyQx6QJYRgwGDIYMZAKbWPz9HbOBQAAADSElEQVR4nO1Wz2sbRxR+b3a1v6SVZDtSIqtOTWgwrW0ocXFiQpqUktLS5NSDL4Vecgy59C/otT210Guh50Cht9YESktCoTTQJMQOLkoc29JaUixptdrd2V8zOWwwPVirjVMfAv5OM8t773tv3jdvFjnncJgghxr9iOCI4PUgEIMgOLzoiChalqUoSur7zAEwfXRKqahpmqIoB84xGYQQkiZ3zjlwAADqNAPaffEpnWOqJiMiA98L+0+e3qzv/OKHFkdATHVW4qgUGCIaW3e2134OG6b/pMUD1pi5lRkvnjr3xURpnvMRTCMIADgAAeLbP90WvI52LOIAdAVY8RhbWgZAgAhASPBHx3FUVR0eHalr7hgPfXvn3p9f76DNfbsqVOcvfiNJTun4XDZXTpCW67qJPeAQBO725h1JznnmbtFQSmtL5QeTBWHWCz3H04363cCzkk9gKAHnHBCN+n01dzIKTfpPrclPV+x2OQTL7lTwxyhSiVBqtlYBMEFRQwkQkdIeQSTAWPCY7q6zIF/fpgNTwFb2q5uZcb1HQ9XqBpRaCX0eQsA5AHhuH7gvKCKpefd++L3c2/1r6vL37NNas/D5+G0JOoTIui56tPOi4v2wv4riroWBB6hyYIxMVpYvVYRHs792rbF8oAS6N3BNB3WBCMijpGm2fwVxxaKkAESCkGv7HVu114mdX+gXT8sNrGE10xr4AnDGGRHlPZe0FcSyU7WxZ+1HXstWK3l9Kru+ObUyuPDdl7lMUPDD7kT1rPnMCGVaeaOccN0SZMolKVepvtc2aj4bvLN0TR6bXFwsuL66tsGodOXf1d8GvbuV6owgyAAvr6K4Z32zvdVoT08vtBr3P7zwyUdvyVtbGSU/Z3athcWrG0Z/t9eOzV+aIC45Xzhx/v3PjBa99ceGG8lMniiVitOnZpqNvzMie3v2A10/HpsPizNiFmlaXtPySOrvnvl4bv5SfWNFlLSpNxedwbaYyS6cOf/fbPaH4zg8EYyxvfXm6vX202/3tlEUJfs6jjNymgIixtaIqJ+4IQrZmBeREDL6OUFKqSzLI+0OBkqpaNt2GIapXWK1pH33Pc9D3/cPkFp6JE3a/wWv/6/jEcERwavjOQuv2jP/lPx0AAAAAElFTkSuQmCC" alt="Bandiera Due Sicilie" style="height:36px;display:inline-block;vertical-align:middle;border-radius:3px;border:1px solid rgba(201,162,39,.3);margin-right:6px">
     <span>Lotto Prediction Engine</span>
   </h1>
   <div style="font-family:monospace;font-size:10px;color:#9999bb;margin-top:4px;letter-spacing:.5px">
@@ -84,7 +75,7 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
     <a href="tel:+393495560487" style="color:#9999bb;text-decoration:none">+39 349 556 0487</a>
   </div>
   <div id="install-banner" style="display:none;margin-top:8px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);border-radius:8px;padding:8px 12px;align-items:center;gap:10px;flex-wrap:wrap">
-    <span style="font-size:12px;color:#c9a227;font-family:monospace">Installa l app sul tuo telefono!</span>
+    <span style="font-size:12px;color:#c9a227;font-family:monospace">Installa l app sul telefono!</span>
     <button onclick="installApp()" class="bgold" style="font-size:9px;padding:5px 12px">+ Installa</button>
     <button onclick="document.getElementById('install-banner').style.display='none'" class="bgh" style="font-size:9px;padding:4px 8px">x</button>
   </div>
@@ -344,7 +335,7 @@ function renderAll() {
   }
   if (allDraws.length) h += '<span style="font-family:monospace;font-size:9px;color:#6666aa">'+allDraws.length+' righe</span>';
   document.getElementById('yrow').innerHTML = h;
-  if(!document.getElementById('last-update')){var infoDiv=document.createElement('div');infoDiv.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';infoDiv.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span><span id="update-info" style="font-family:monospace;font-size:9px;color:#57cc99"></span><button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna dati</button>';document.getElementById('yrow').appendChild(infoDiv);}
+  if(!document.getElementById('last-update')){var d=document.createElement('div');d.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';d.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span><span id="update-info" style="font-family:monospace;font-size:9px;color:#57cc99"></span><button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna</button>';document.getElementById('yrow').appendChild(d);}
 
   var data = engine(curRuota);
   document.getElementById('rinfo').textContent = data ? data.total+' estrazioni' : 'nessun dato';
@@ -1323,28 +1314,9 @@ function goTab(id, btn) {
   });
 })();
 </script>
-
 <script>
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').then(function(){
-    navigator.serviceWorker.addEventListener('message',function(e){
-      if(e.data&&e.data.type==='DATA_UPDATED') loadServerData();
-    });
-  });
-}
-function loadServerData(){
-  fetch('./data/latest.json?t='+Date.now())
-    .then(function(r){return r.json();})
-    .then(function(data){
-      var draws=data.draws||[];if(!draws.length)return;
-      var seen={};
-      for(var i=0;i<allDraws.length;i++) seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;
-      var newOnes=[];
-      for(var i=0;i<draws.length;i++){var d=draws[i];if(d.date&&d.ruota&&d.nums&&!seen[d.date+'|'+d.ruota]){newOnes.push(d);seen[d.date+'|'+d.ruota]=1;}}
-      if(newOnes.length>0){var merged=allDraws.concat(newOnes);dbSaveAll(merged).then(function(){allDraws=merged;renderAll();var el=document.getElementById('update-info');if(el)el.textContent='+'+newOnes.length+' nuove estrazioni';});}
-      var ul=document.getElementById('last-update');if(ul&&data.last_update)ul.textContent='Aggiornato: '+data.last_update;
-    }).catch(function(){});
-}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(function(){navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='DATA_UPDATED')loadServerData();});});}
+function loadServerData(){fetch('./data/latest.json?t='+Date.now()).then(function(r){return r.json();}).then(function(data){var draws=data.draws||[];if(!draws.length)return;var seen={};for(var i=0;i<allDraws.length;i++)seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;var newOnes=[];for(var i=0;i<draws.length;i++){var d=draws[i];if(d.date&&d.ruota&&d.nums&&!seen[d.date+'|'+d.ruota]){newOnes.push(d);seen[d.date+'|'+d.ruota]=1;}}if(newOnes.length>0){var merged=allDraws.concat(newOnes);dbSaveAll(merged).then(function(){allDraws=merged;renderAll();var el=document.getElementById('update-info');if(el)el.textContent='+'+newOnes.length+' nuove';});}var ul=document.getElementById('last-update');if(ul&&data.last_update)ul.textContent='Agg: '+data.last_update;}).catch(function(){});}
 setTimeout(loadServerData,1500);
 var installPrompt=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installPrompt=e;var b=document.getElementById('install-banner');if(b)b.style.display='flex';});
