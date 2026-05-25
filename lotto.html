@@ -1398,6 +1398,111 @@ function goTab(id, btn) {
 // ============================================================
 // AVVIO
 // ============================================================
+
+// ============================================================
+// AREA AMMINISTRATORE
+// ============================================================
+var ADMIN_PASS = 'Napoli2025!';
+
+function openAdmin(){
+  if(document.getElementById('admin-overlay'))return;
+  var d=document.createElement('div');
+  d.id='admin-overlay';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px';
+  d.innerHTML='<div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:28px;max-width:360px;width:100%">'
+    +'<div style="text-align:center;margin-bottom:18px">'
+    +'<div style="font-size:28px;margin-bottom:6px">&#128274;</div>'
+    +'<div style="font-family:monospace;font-size:13px;color:#c9a227;font-weight:700">AREA AMMINISTRATORE</div>'
+    +'</div>'
+    +'<input id="admin-pwd" type="password" placeholder="Password" '
+    +'style="width:100%;background:#080812;border:1px solid #c9a227;border-radius:7px;color:#c9a227;'
+    +'padding:10px;font-family:monospace;font-size:13px;outline:none;margin-bottom:10px;text-align:center" '
+    +'onkeydown="if(event.key==='Enter')checkAdmin()">'
+    +'<div id="admin-err" style="color:#e63946;font-family:monospace;font-size:10px;text-align:center;height:16px;margin-bottom:8px"></div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="checkAdmin()" class="bgold" style="flex:1">Accedi</button>'
+    +'<button onclick="closeAdmin()" class="bgh" style="flex:1">Annulla</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+  setTimeout(function(){var e=document.getElementById('admin-pwd');if(e)e.focus();},100);
+}
+
+function closeAdmin(){var e=document.getElementById('admin-overlay');if(e)e.remove();}
+
+function checkAdmin(){
+  var pwd=document.getElementById('admin-pwd');
+  if(!pwd)return;
+  if(pwd.value===ADMIN_PASS){closeAdmin();openAdminPanel();}
+  else{var err=document.getElementById('admin-err');if(err)err.textContent='Password errata';pwd.value='';pwd.focus();}
+}
+
+function openAdminPanel(){
+  if(document.getElementById('adminp-overlay'))return;
+  var years=[];var ym={};
+  for(var i=0;i<allDraws.length;i++){var y=getYear(allDraws[i]);if(!ym[y]){ym[y]=1;years.push(y);}}
+  years.sort();
+  var premDate=localStorage.getItem('lotto_premium_date')||'Mai';
+  var d=document.createElement('div');
+  d.id='adminp-overlay';
+  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto';
+  var yBtns='';
+  for(var i=0;i<years.length;i++){
+    yBtns+='<span style="display:inline-flex;align-items:center;gap:5px;background:#0d0d1c;border:1px solid rgba(201,162,39,.4);border-radius:5px;padding:3px 8px;font-size:10px;color:#c9a227;font-family:monospace">'
+      +years[i]+'<button onclick="delYearAdmin(''+years[i]+'')" style="background:none;border:none;color:#e63946;cursor:pointer;font-size:12px;padding:0">x</button></span>';
+  }
+  d.innerHTML='<div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:24px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto">'
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
+    +'<div style="font-family:monospace;font-size:13px;color:#c9a227;font-weight:700">&#9881; PANNELLO ADMIN</div>'
+    +'<button onclick="closeAdminPanel()" class="bgh">x Chiudi</button>'
+    +'</div>'
+    // Stats
+    +'<div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px">'
+    +'<div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">STATISTICHE</div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">'
+    +'<div style="text-align:center;background:#0d0d1c;border-radius:7px;padding:8px"><div style="font-family:monospace;font-size:20px;color:#c9a227;font-weight:700">'+allDraws.length+'</div><div style="font-size:9px;color:#9999bb">Righe totali</div></div>'
+    +'<div style="text-align:center;background:#0d0d1c;border-radius:7px;padding:8px"><div style="font-family:monospace;font-size:20px;color:#c9a227;font-weight:700">'+years.length+'</div><div style="font-size:9px;color:#9999bb">Anni</div></div>'
+    +'</div>'
+    +'<div style="margin-top:6px;text-align:center;padding:6px;background:#0d0d1c;border-radius:7px">'
+    +'<span style="font-size:11px;color:'+(isPremium()?'#57cc99':'#e63946')+';font-weight:700">'+(isPremium()?'PREMIUM dal '+premDate:'FREE')+'</span>'
+    +'</div></div>'
+    // Anni con X (solo admin)
+    +(years.length?'<div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px">'
+    +'<div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">GESTIONE ANNI</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:5px">'+yBtns+'</div>'
+    +'</div>':'')
+    // Backup
+    +'<div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px">'
+    +'<div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">BACKUP & RIPRISTINO</div>'
+    +'<button onclick="exportData()" class="bgold" style="width:100%;margin-bottom:8px">Esporta backup (.tsv)</button>'
+    +'<label style="display:flex;align-items:center;justify-content:center;width:100%;background:#09091a;border:1px solid #457b9d;color:#457b9d;border-radius:8px;padding:9px;font-family:monospace;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase">Importa backup<input type="file" accept=".tsv,.txt" onchange="importData(event);closeAdminPanel()" style="display:none"></label>'
+    +'</div>'
+    // Premium
+    +'<div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px">'
+    +'<div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">GESTIONE PREMIUM</div>'
+    +(isPremium()
+      ?'<button onclick="if(confirm('Revocare Premium?')){localStorage.removeItem('lotto_premium');localStorage.removeItem('lotto_premium_date');closeAdminPanel();renderAll();}" class="bgh" style="width:100%;color:#e63946;border-color:#e63946">Revoca Premium</button>'
+      :'<button onclick="unlockPremium();closeAdminPanel()" class="bgold" style="width:100%">Attiva Premium (admin)</button>'
+    )
+    +'</div>'
+    // Pericolo
+    +'<div style="background:rgba(230,57,70,.06);border:1px solid rgba(230,57,70,.2);border-radius:10px;padding:12px">'
+    +'<div style="font-family:monospace;font-size:9px;color:#e63946;letter-spacing:2px;margin-bottom:8px">ZONA PERICOLO</div>'
+    +'<button onclick="if(confirm('Cancellare TUTTI i dati?')){dbClearAll().then(function(){allDraws=[];closeAdminPanel();renderAll();});}" class="bgh" style="width:100%;color:#e63946;border-color:#e63946">Cancella tutti i dati</button>'
+    +'</div>'
+    +'</div>';
+  document.body.appendChild(d);
+}
+
+function closeAdminPanel(){var e=document.getElementById('adminp-overlay');if(e)e.remove();}
+
+function delYearAdmin(y){
+  if(!confirm('Eliminare tutti i dati del '+y+'?'))return;
+  var filtered=[];
+  for(var i=0;i<allDraws.length;i++) if(getYear(allDraws[i])!==y) filtered.push(allDraws[i]);
+  dbSaveAll(filtered).then(function(){allDraws=filtered;closeAdminPanel();renderAll();setTimeout(openAdminPanel,100);});
+}
+// ============================================================
+
 (function init() {
   applyCSS();
   document.getElementById('p-prev').innerHTML = '<div class="pl" style="text-align:center;padding:40px;font-family:monospace;font-size:12px;color:#c9a227;letter-spacing:2px">CARICAMENTO...</div>';
