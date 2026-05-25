@@ -74,11 +74,7 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
     &nbsp;|&nbsp;
     <a href="tel:+393495560487" style="color:#9999bb;text-decoration:none">+39 349 556 0487</a>
   </div>
-  <div id="install-banner" style="display:none;margin-top:8px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);border-radius:8px;padding:8px 12px;align-items:center;gap:10px;flex-wrap:wrap">
-    <span style="font-size:12px;color:#c9a227;font-family:monospace">Installa l app sul telefono!</span>
-    <button onclick="installApp()" class="bgold" style="font-size:9px;padding:5px 12px">+ Installa</button>
-    <button onclick="document.getElementById('install-banner').style.display='none'" class="bgh" style="font-size:9px;padding:4px 8px">x</button>
-  </div>
+  <div id="install-banner" style="display:none;margin-top:8px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);border-radius:8px;padding:8px 12px;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:12px;color:#c9a227;font-family:monospace">Installa l app!</span><button onclick="installApp()" class="bgold" style="font-size:9px;padding:5px 12px">+ Installa</button><button onclick="closeBanner()" class="bgh" style="font-size:9px;padding:4px 8px">x</button></div>
   <div class="yrow" id="yrow"></div>
 </div>
 <div class="tabs">
@@ -335,7 +331,12 @@ function renderAll() {
   }
   if (allDraws.length) h += '<span style="font-family:monospace;font-size:9px;color:#6666aa">'+allDraws.length+' righe</span>';
   document.getElementById('yrow').innerHTML = h;
-  if(!document.getElementById('last-update')){var d=document.createElement('div');d.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';d.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span><span id="update-info" style="font-family:monospace;font-size:9px;color:#57cc99"></span><button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna</button>';document.getElementById('yrow').appendChild(d);}
+  if(!document.getElementById('last-update')){var ud=document.createElement('div');ud.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';ud.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span><span id="update-info" style="font-family:monospace;font-size:9px;color:#57cc99"></span><button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna</button>';document.getElementById('yrow').appendChild(ud);}
+  // Mostra badge premium/free nell header
+  var badge = document.createElement('span');
+  badge.innerHTML = premiumBadge();
+  badge.onclick = function(){ if(!isPremium()) showPaywall(); };
+  document.getElementById('yrow').insertBefore(badge.firstChild, document.getElementById('yrow').firstChild);
 
   var data = engine(curRuota);
   document.getElementById('rinfo').textContent = data ? data.total+' estrazioni' : 'nessun dato';
@@ -360,6 +361,18 @@ function renderAll() {
 // PREVISIONE
 // ============================================================
 function renderPrev(data) {
+  // FREE: solo Napoli, solo top 5 e ranking top 10
+  if (!isPremium() && curRuota !== 'Napoli') {
+    document.getElementById('p-prev').innerHTML =
+      '<div class="card" style="text-align:center;padding:30px">'
+      + '<div style="font-size:32px;margin-bottom:10px">🔒</div>'
+      + '<div style="font-family:monospace;font-size:13px;color:#c9a227;margin-bottom:6px">RUOTE PREMIUM</div>'
+      + '<p style="font-size:12px;color:#9999bb;margin-bottom:14px">La versione gratuita include solo la ruota di <strong style="color:#c9a227">Napoli</strong>.<br>Sblocca Premium per accedere a tutte le 11 ruote.</p>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:10px 20px;font-family:monospace;font-size:11px;font-weight:700;text-decoration:none;margin-bottom:8px">&#128178; Sblocca Premium - 4.99 euro</a><br>'
+      + '<button onclick="setNapoli()" class="bgh" style="margin-top:8px;font-size:10px">Torna a Napoli (Free)</button>'
+      + '</div>';
+    return;
+  }
   var nums = data.nums, total = data.total;
   var sorted = nums.slice().sort(function(a,b){return b.score-a.score;});
   var top5 = sorted.slice(0,5);
@@ -442,6 +455,18 @@ function renderPrev(data) {
 // COPPIE & TERNI
 // ============================================================
 function renderCop(data) {
+  if (!isPremium()) {
+    document.getElementById('p-cop').innerHTML =
+      '<div style="text-align:center;padding:50px 20px">'
+      + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
+      + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">COPPIE & TERNI - PREMIUM</div>'
+      + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Le coppie frequenti, i terni e l analisi avanzata<br>sono disponibili nella versione Premium.</p>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
+      + '</div>';
+    return;
+  }
   var coppie = data.coppie, terni = data.terni, nums = data.nums, total = data.total;
   function gs(n) { for(var i=0;i<nums.length;i++) if(nums[i].n===n) return nums[i].score; return 0; }
 
@@ -515,6 +540,18 @@ function renderCop(data) {
 // SCHEDINA
 // ============================================================
 function renderSch(data, years) {
+  if (!isPremium()) {
+    document.getElementById('p-sch').innerHTML =
+      '<div style="text-align:center;padding:50px 20px">'
+      + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
+      + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">SCHEDINA PREDITTIVA - PREMIUM</div>'
+      + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Cinquina, quaterna, terno, ambi e jolly<br>sono disponibili nella versione Premium.</p>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
+      + '</div>';
+    return;
+  }
   var nums = data.nums, coppie = data.coppie, terni = data.terni, total = data.total;
   var byScore = nums.slice().sort(function(a,b){return b.score-a.score;});
   var byRit = nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
@@ -588,6 +625,30 @@ function renderSch(data, years) {
 // RITARDATARI
 // ============================================================
 function renderRit(data) {
+  if (!isPremium()) {
+    // Versione free: solo top 10 ritardatari, no classifica completa
+    var nums = data.nums;
+    var sorted = nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;}).slice(0,10);
+    var maxR = sorted[0] ? sorted[0].ritardo : 1;
+    var top10 = '';
+    for(var i=0;i<sorted.length;i++) {
+      var x=sorted[i];
+      top10 += '<div style="text-align:center;background:#09091a;border:1px solid '+rc(x.ritardo)+'33;border-radius:8px;padding:7px 10px;min-width:56px">'
+        +'<div style="font-family:monospace;font-size:18px;font-weight:700;color:'+rc(x.ritardo)+'">'+x.n+'</div>'
+        +'<div style="font-family:monospace;font-size:8px;color:#9999bb;letter-spacing:1px">RITARDO</div>'
+        +'<div style="font-family:monospace;font-size:11px;color:#aaa">'+x.ritardo+'</div>'
+        +'</div>';
+    }
+    document.getElementById('p-rit').innerHTML =
+      '<div class="card" style="margin-bottom:12px"><div class="st">Top 10 piu assenti - '+curRuota+' (FREE)</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'+top10+'</div>'
+      +'<div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.3);border-radius:8px;padding:14px;text-align:center">'
+      +'<div style="font-size:13px;color:#9999bb;margin-bottom:12px">La classifica completa di tutti i 90 numeri<br>con trend e date e disponibile nella versione Premium.</div>'
+      +'<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:10px 20px;font-family:monospace;font-size:11px;font-weight:700;text-decoration:none;margin-bottom:8px">&#128178; Sblocca Premium - 4.99 euro</a><br>'
+      +'<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:6px 14px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:6px">Ho gia pagato - Sblocca</button>'
+      +'</div></div>';
+    return;
+  }
   var nums = data.nums;
   var sorted = nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
   var maxR = sorted[0] ? sorted[0].ritardo : 1;
@@ -631,6 +692,18 @@ function renderRit(data) {
 // ARCHIVIO
 // ============================================================
 function renderArc(data) {
+  if (!isPremium()) {
+    document.getElementById('p-arc').innerHTML =
+      '<div style="text-align:center;padding:50px 20px">'
+      + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
+      + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">ARCHIVIO STORICO - PREMIUM</div>'
+      + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Lo storico completo di tutte le estrazioni<br>e disponibile nella versione Premium.</p>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
+      + '</div>';
+    return;
+  }
   var draws = data.draws;
   var PER = 15, tot = draws.length, pages = Math.ceil(tot/PER);
   var pg = Math.max(0, Math.min(archPg, pages-1));
@@ -665,6 +738,18 @@ function renderArc(data) {
 // LOTTOMATICA + BUDGET
 // ============================================================
 function renderLot(data, years) {
+  if (!isPremium()) {
+    document.getElementById('p-lot').innerHTML =
+      '<div style="text-align:center;padding:50px 20px">'
+      + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
+      + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">LOTTOMATICA & BUDGET - PREMIUM</div>'
+      + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Il link diretto a Lottomatica, le giocate<br>consigliate e il gestore budget<br>sono disponibili nella versione Premium.</p>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
+      + '</div>';
+    return;
+  }
   var nums = data.nums, coppie = data.coppie;
   var byScore = nums.slice().sort(function(a,b){return b.score-a.score;});
   var byRit = nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
@@ -838,6 +923,18 @@ function cpNums(arr, id) {
 // TUTTE LE RUOTE
 // ============================================================
 function renderAllRuote() {
+  if (!isPremium()) {
+    document.getElementById('p-all').innerHTML =
+      '<div style="text-align:center;padding:50px 20px">'
+      + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
+      + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">TUTTE LE RUOTE - PREMIUM</div>'
+      + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">L analisi completa di tutte le 11 ruote<br>con giocate consigliate e numeri universali<br>e disponibile nella versione Premium.</p>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
+      + '</div>';
+    return;
+  }
   var RUOTE = ['Bari','Cagliari','Firenze','Genova','Milano',
                'Napoli','Palermo','Roma','Torino','Venezia','Nazionale'];
 
@@ -1309,6 +1406,11 @@ function goTab(id, btn) {
     }
   }).then(function() {
     renderAll();
+  // Mostra schermata benvenuto se prima visita
+  if (!localStorage.getItem('lotto_visited')) {
+    localStorage.setItem('lotto_visited','1');
+    setTimeout(showWelcome, 800);
+  }
   }).catch(function(e) {
     document.getElementById('p-prev').innerHTML = '<div class="card" style="border-color:#e63946;color:#e63946;max-width:400px;margin:0 auto;text-align:center;padding:30px">Errore avvio: '+e.message+'</div>';
   });
@@ -1320,7 +1422,7 @@ function loadServerData(){fetch('./data/latest.json?t='+Date.now()).then(functio
 setTimeout(loadServerData,1500);
 var installPrompt=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installPrompt=e;var b=document.getElementById('install-banner');if(b)b.style.display='flex';});
-function installApp(){if(!installPrompt)return;installPrompt.prompt();installPrompt.userChoice.then(function(){installPrompt=null;var b=document.getElementById('install-banner');if(b)b.style.display='none';});}
+function installApp(){if(!installPrompt)return;installPrompt.prompt();installPrompt.userChoice.then(function(){installPrompt=null;closeBanner();});}
 </script>
 </body>
 </html>
