@@ -1,0 +1,33 @@
+name: Aggiorna estrazioni Lotto
+
+on:
+  schedule:
+    # Martedi, giovedi e sabato alle 21:30 ora italiana (20:30 UTC)
+    - cron: '30 20 * * 2,4,6'
+  workflow_dispatch:  # consente avvio manuale dal sito GitHub
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installa dipendenze
+        run: pip install requests beautifulsoup4 lxml
+
+      - name: Scarica ultime estrazioni
+        run: python3 scripts/fetch_lotto.py
+
+      - name: Commit e push aggiornamento
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/latest.json
+          git diff --staged --quiet || git commit -m "Aggiornamento estrazioni $(date '+%d/%m/%Y')"
+          git push
