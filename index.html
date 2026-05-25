@@ -81,6 +81,7 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
   <button class="tab"   onclick="goTab('rit',this)">&#9201; Ritardatari</button>
   <button class="tab"   onclick="goTab('arc',this)">&#128197; Archivio</button>
   <button class="tab"   onclick="goTab('lot',this)">&#127922; Lottomatica</button>
+  <button class="tab"   onclick="goTab('all',this)">&#127919; Tutte le Ruote</button>
   <button class="tab"   onclick="goTab('set',this)" style="margin-left:auto">&#9881; Aspetto</button>
 </div>
 <div class="rbar">
@@ -100,6 +101,7 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
   <div id="p-rit"  style="display:none"></div>
   <div id="p-arc"  style="display:none"></div>
   <div id="p-lot"  style="display:none"></div>
+  <div id="p-all"  style="display:none"></div>
   <div id="p-set"  style="display:none"></div>
 </div>
 <div class="mbg" id="modal" onclick="if(event.target===this)closeModal()">
@@ -822,6 +824,205 @@ function cpNums(arr, id) {
   });
 }
 
+
+// ============================================================
+// TUTTE LE RUOTE
+// ============================================================
+function renderAllRuote() {
+  var RUOTE = ['Bari','Cagliari','Firenze','Genova','Milano',
+               'Napoli','Palermo','Roma','Torino','Venezia','Nazionale'];
+
+  if (!allDraws.length) {
+    document.getElementById('p-all').innerHTML =
+      '<div class="card" style="text-align:center;padding:40px;color:#9999bb">Carica le estrazioni per vedere questa pagina.</div>';
+    return;
+  }
+
+  // Calcola top numeri per ogni ruota
+  var ruoteData = [];
+  for (var ri = 0; ri < RUOTE.length; ri++) {
+    var ruota = RUOTE[ri];
+    var data = engine(ruota);
+    if (!data || !data.total) continue;
+
+    var byScore = data.nums.slice().sort(function(a,b){return b.score-a.score;});
+    var byFreq  = data.nums.slice().sort(function(a,b){return b.freq-a.freq;});
+    var byRit   = data.nums.slice().sort(function(a,b){return b.ritardo-a.ritardo;});
+
+    // Ambo consigliato: top 2 per score
+    var ambo = [byScore[0].n, byScore[1].n];
+    // Terno: top 2 score + 1 ritardatario
+    var terno = [byScore[0].n, byScore[1].n];
+    for (var i=0;i<byRit.length;i++) {
+      if (terno.indexOf(byRit[i].n) < 0) { terno.push(byRit[i].n); break; }
+    }
+    // Top 5 per score
+    var top5 = byScore.slice(0,5).map(function(x){return x.n;});
+    // Numero piu frequente in assoluto
+    var topFreq = byFreq[0].n;
+    // Numero piu ritardatario
+    var topRit = byRit[0];
+
+    ruoteData.push({
+      ruota: ruota,
+      total: data.total,
+      top5: top5,
+      ambo: ambo,
+      terno: terno,
+      topFreq: topFreq,
+      topRit: topRit,
+      score0: byScore[0].score,
+      coppie: data.coppie.slice(0,3)
+    });
+  }
+
+  // Trova numeri che escono su piu ruote (numeri "universali")
+  var numCount = {};
+  for (var ri=0;ri<ruoteData.length;ri++) {
+    var top5 = ruoteData[ri].top5;
+    for (var i=0;i<top5.length;i++) {
+      numCount[top5[i]] = (numCount[top5[i]]||0)+1;
+    }
+  }
+  var universal = [];
+  for (var n in numCount) {
+    if (numCount[n] >= 3) universal.push({n:parseInt(n), count:numCount[n]});
+  }
+  universal.sort(function(a,b){return b.count-a.count;});
+
+  function ball(n, col, size) {
+    col = col || sc(60);
+    size = size || 32;
+    var fs = Math.round(size*0.38);
+    return '<div class="nb" style="width:'+size+'px;height:'+size+'px;font-size:'+fs+'px;'
+      +'border:1.5px solid '+col+';color:'+col+';background:'+col+'18;flex-shrink:0">'+n+'</div>';
+  }
+
+  // ── SEZIONE 1: Numeri universali ─────────────────────────────────────
+  var univHtml = '';
+  if (universal.length) {
+    for (var i=0;i<Math.min(10,universal.length);i++) {
+      var u = universal[i];
+      var col = u.count>=8?'#c9a227':u.count>=6?'#e87b2a':u.count>=4?'#57cc99':'#457b9d';
+      univHtml += '<div style="text-align:center;background:#09091a;border:1px solid '+col+'44;border-radius:10px;padding:10px 14px;min-width:70px">'
+        +'<div style="font-family:monospace;font-size:22px;font-weight:700;color:'+col+'">'+u.n+'</div>'
+        +'<div style="font-size:9px;color:#9999bb;margin-top:3px;font-family:monospace">'+u.count+'/11 ruote</div>'
+        +'</div>';
+    }
+  }
+
+  // ── SEZIONE 2: Card per ogni ruota ───────────────────────────────────
+  var cardsHtml = '';
+  for (var ri=0;ri<ruoteData.length;ri++) {
+    var d = ruoteData[ri];
+    var top5balls = '';
+    for (var i=0;i<d.top5.length;i++) {
+      var col = i===0?sc(d.score0):sc(Math.max(40,d.score0-i*8));
+      top5balls += ball(d.top5[i], col, i===0?40:32);
+    }
+    var amboBalls = '<div style="display:flex;gap:5px;align-items:center">'
+      +ball(d.ambo[0],'#57cc99',30)+ball(d.ambo[1],'#57cc99',30)+'</div>';
+    var ternoBalls = '<div style="display:flex;gap:5px;align-items:center">'
+      +ball(d.terno[0],'#c9a227',30)+ball(d.terno[1],'#c9a227',30)+ball(d.terno[2],'#c9a227',30)+'</div>';
+
+    // Top 3 coppie
+    var coppieStr = '';
+    for (var i=0;i<d.coppie.length;i++) {
+      var cp = d.coppie[i];
+      coppieStr += '<span style="font-family:monospace;font-size:10px;color:#c9a227;background:rgba(201,162,39,.1);'
+        +'border:1px solid rgba(201,162,39,.3);border-radius:4px;padding:2px 7px;margin:1px">'
+        +cp.a+'-'+cp.b+'</span>';
+    }
+
+    cardsHtml += '<div class="card" style="border:1px solid #1c1c2e">'
+      // Header ruota
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'
+      +'<div style="font-family:monospace;font-size:13px;font-weight:700;color:var(--stc)">'+d.ruota.toUpperCase()+'</div>'
+      +'<div style="font-family:monospace;font-size:9px;color:#9999bb">'+d.total+' estr.</div>'
+      +'</div>'
+      // Top 5
+      +'<div style="margin-bottom:10px">'
+      +'<div style="font-size:9px;color:#9999bb;font-family:monospace;letter-spacing:1px;margin-bottom:5px">TOP 5 SCORE</div>'
+      +'<div style="display:flex;gap:5px;align-items:center;flex-wrap:wrap">'+top5balls+'</div>'
+      +'</div>'
+      // Giocate consigliate
+      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">'
+      +'<div style="background:#09091a;border-radius:7px;padding:8px">'
+      +'<div style="font-size:9px;color:#57cc99;font-family:monospace;margin-bottom:5px">AMBO CONSIGLIATO</div>'
+      +amboBalls+'</div>'
+      +'<div style="background:#09091a;border-radius:7px;padding:8px">'
+      +'<div style="font-size:9px;color:#c9a227;font-family:monospace;margin-bottom:5px">TERNO CONSIGLIATO</div>'
+      +ternoBalls+'</div>'
+      +'</div>'
+      // Ritardatario + coppie
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">'
+      +'<div>'
+      +'<div style="font-size:9px;color:#e63946;font-family:monospace;margin-bottom:4px">PIU ASSENTE</div>'
+      +'<div style="display:flex;align-items:center;gap:5px">'
+      +ball(d.topRit.n,'#e63946',28)
+      +'<span style="font-size:10px;color:#9999bb">'+d.topRit.ritardo+' estr.</span>'
+      +'</div></div>'
+      +'<div>'
+      +'<div style="font-size:9px;color:#9999bb;font-family:monospace;margin-bottom:4px">COPPIE FREQUENTI</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:2px">'+coppieStr+'</div>'
+      +'</div></div>'
+      +'</div>';
+  }
+
+  // ── TABELLA RIASSUNTIVA ──────────────────────────────────────────────
+  var tableRows = '';
+  for (var ri=0;ri<ruoteData.length;ri++) {
+    var d = ruoteData[ri];
+    tableRows += '<tr style="border-bottom:1px solid #1c1c2e">'
+      +'<td style="padding:7px 10px;font-family:monospace;font-size:11px;color:var(--stc);font-weight:700">'+d.ruota+'</td>'
+      +'<td style="padding:7px 10px">'
+      +'<div style="display:flex;gap:3px">'+d.top5.slice(0,3).map(function(n){return ball(n,sc(55),26);}).join('')+'</div>'
+      +'</td>'
+      +'<td style="padding:7px 10px">'
+      +'<div style="display:flex;gap:3px">'+d.ambo.map(function(n){return ball(n,'#57cc99',26);}).join('')+'</div>'
+      +'</td>'
+      +'<td style="padding:7px 10px">'
+      +'<div style="display:flex;gap:3px">'+d.terno.map(function(n){return ball(n,'#c9a227',26);}).join('')+'</div>'
+      +'</td>'
+      +'<td style="padding:7px 6px;font-family:monospace;font-size:11px;color:#e63946">'
+      +ball(d.topRit.n,'#e63946',26)
+      +'</td>'
+      +'</tr>';
+  }
+
+  document.getElementById('p-all').innerHTML =
+    // Numeri universali
+    (universal.length ? '<div class="cgold" style="margin-bottom:14px">'
+      +'<div class="st">Numeri che escono su piu ruote (top score su almeno 3 ruote)</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px">'+univHtml+'</div>'
+      +'<p style="font-size:12px;color:#9999bb">Questi numeri hanno alto score su piu ruote contemporaneamente — candidati per una giocata su piu ruote.</p>'
+      +'</div>' : '')
+
+    // Tabella riassuntiva
+    +'<div class="card" style="margin-bottom:14px;overflow-x:auto">'
+    +'<div class="st">Riepilogo tutte le ruote</div>'
+    +'<table style="width:100%;border-collapse:collapse">'
+    +'<thead><tr style="border-bottom:2px solid rgba(201,162,39,.3)">'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#9999bb;text-align:left;font-weight:normal;letter-spacing:1px">RUOTA</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#9999bb;text-align:left;font-weight:normal;letter-spacing:1px">TOP 3</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#57cc99;text-align:left;font-weight:normal;letter-spacing:1px">AMBO</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#c9a227;text-align:left;font-weight:normal;letter-spacing:1px">TERNO</th>'
+    +'<th style="padding:6px 10px;font-family:monospace;font-size:9px;color:#e63946;text-align:left;font-weight:normal;letter-spacing:1px">ASSENTE</th>'
+    +'</tr></thead>'
+    +'<tbody>'+tableRows+'</tbody>'
+    +'</table></div>'
+
+    // Card dettagliate per ruota
+    +'<div class="st">Dettaglio per ruota</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">'
+    +cardsHtml+'</div>'
+
+    // Disclaimer
+    +'<div style="background:rgba(230,57,70,.06);border:1px solid rgba(230,57,70,.18);border-radius:8px;padding:10px 14px;margin-top:14px">'
+    +'<span style="font-size:12px;color:#9999bb">Analisi statistica sui dati storici. Non garantisce vincite. Il lotto e un gioco d azzardo. Gioca responsabilmente.</span>'
+    +'</div>';
+}
+
 // ============================================================
 // ASPETTO / SETTINGS
 // ============================================================
@@ -1067,7 +1268,7 @@ function goTab(id, btn) {
   var tabs = document.querySelectorAll('.tab');
   for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('a');
   btn.classList.add('a');
-  var panels = ['prev','cop','sch','rit','arc','lot','set'];
+  var panels = ['prev','cop','sch','rit','arc','lot','all','set'];
   for(var i=0;i<panels.length;i++)
     document.getElementById('p-'+panels[i]).style.display = panels[i]===id ? '' : 'none';
 }
@@ -1128,9 +1329,7 @@ function loadServerData(){
       }
       if(newOnes.length>0){
         var merged=allDraws.concat(newOnes);
-        dbSaveAll(merged).then(function(){
-          allDraws=merged;
-          renderAll();
+        dbSaveAll(merged).then(function(){allDraws=merged;renderAll();
           var el=document.getElementById('update-info');
           if(el) el.textContent='+'+newOnes.length+' nuove estrazioni';
         });
