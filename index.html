@@ -67,7 +67,7 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
     &nbsp;|&nbsp;
     <a href="tel:+393495560487" style="color:#9999bb;text-decoration:none">+39 349 556 0487</a>
   </div>
-  <div id="install-banner" style="display:none;margin-top:8px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);border-radius:8px;padding:8px 12px;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:12px;color:#c9a227;font-family:monospace">Installa l app!</span><button onclick="installApp()" class="bgold" style="font-size:9px;padding:5px 12px">+ Installa</button><button onclick="closeBanner()" class="bgh" style="font-size:9px;padding:4px 8px">x</button></div>
+  <div id="install-banner" style="display:none;margin-top:8px;background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.4);border-radius:8px;padding:8px 12px;align-items:center;gap:10px;flex-wrap:wrap"><span style="font-size:12px;color:#c9a227;font-family:monospace">Installa!</span><button onclick="installApp()" class="bgold" style="font-size:9px;padding:5px 12px">+ Installa</button><button onclick="closeBanner()" class="bgh" style="font-size:9px;padding:4px 8px">x</button></div>
   <div class="yrow" id="yrow"></div>
 </div>
 <div class="tabs">
@@ -1448,7 +1448,7 @@ function openAdminPanel(){
   var yBtns='';
   for(var i=0;i<years.length;i++){
     yBtns+='<span style="display:inline-flex;align-items:center;gap:5px;background:#0d0d1c;border:1px solid rgba(201,162,39,.4);border-radius:5px;padding:3px 8px;font-size:10px;color:#c9a227;font-family:monospace">'
-      +years[i]+'<button data-y="'+years[i]+'" onclick="delYearAdmin(this.getAttribute('data-y'))" style="background:none;border:none;color:#e63946;cursor:pointer;font-size:12px;padding:0">x</button></span>';
+      +years[i]+'<button id="delbtn_'+years[i]+'" style="background:none;border:none;color:#e63946;cursor:pointer;font-size:12px;padding:0">x</button></span>';
   }
   d.innerHTML='<div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:24px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
@@ -1491,6 +1491,14 @@ function openAdminPanel(){
     +'</div>'
     +'</div>';
   document.body.appendChild(d);
+  // Attach year delete buttons
+  var allYears=years.slice();
+  for(var i=0;i<allYears.length;i++){
+    (function(y){
+      var btn=document.getElementById('delbtn_'+y);
+      if(btn) btn.addEventListener('click',function(){delYearAdmin(y);});
+    })(allYears[i]);
+  }
 }
 
 function closeAdminPanel(){var e=document.getElementById('adminp-overlay');if(e)e.remove();}
