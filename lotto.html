@@ -1417,7 +1417,7 @@ function openAdmin(){
     +'<input id="admin-pwd" type="password" placeholder="Password" '
     +'style="width:100%;background:#080812;border:1px solid #c9a227;border-radius:7px;color:#c9a227;'
     +'padding:10px;font-family:monospace;font-size:13px;outline:none;margin-bottom:10px;text-align:center" '
-    +'onkeydown="if(event.key==='Enter')checkAdmin()">'
+    +'onkeydown="if(event.keyCode===13)checkAdmin()">'
     +'<div id="admin-err" style="color:#e63946;font-family:monospace;font-size:10px;text-align:center;height:16px;margin-bottom:8px"></div>'
     +'<div style="display:flex;gap:8px">'
     +'<button onclick="checkAdmin()" class="bgold" style="flex:1">Accedi</button>'
