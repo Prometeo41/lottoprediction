@@ -342,9 +342,10 @@ function renderAll() {
 
   var h = '<button class="bgold" style="font-size:9px;padding:5px 12px" onclick="openModal()">+ Carica estrazioni</button>';
   for (var i=0;i<years.length;i++) {
-    h += '<span class="tag">'+years[i]+'<button onclick="delYear(\''+years[i]+'\')">x</button></span>';
+    h += '<span class="tag">'+years[i]+'</span>';
   }
   if (allDraws.length) h += '<span style="font-family:monospace;font-size:9px;color:#6666aa">'+allDraws.length+' righe</span>';
+  h += '<button class="bgh" onclick="openAdmin()" style="margin-left:auto;border-color:#555570;color:#555570;font-size:9px;padding:4px 9px" title="Area Amministratore">&#9881;</button>';
   document.getElementById('yrow').innerHTML = h;
   if(!document.getElementById('last-update')){var ud=document.createElement('div');ud.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';ud.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span><button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna</button>';document.getElementById('yrow').appendChild(ud);}
   // Mostra badge premium/free nell header
