@@ -1448,7 +1448,7 @@ function openAdminPanel(){
   var yBtns='';
   for(var i=0;i<years.length;i++){
     yBtns+='<span style="display:inline-flex;align-items:center;gap:5px;background:#0d0d1c;border:1px solid rgba(201,162,39,.4);border-radius:5px;padding:3px 8px;font-size:10px;color:#c9a227;font-family:monospace">'
-      +years[i]+'<button onclick="delYearAdmin(''+years[i]+'')" style="background:none;border:none;color:#e63946;cursor:pointer;font-size:12px;padding:0">x</button></span>';
+      +years[i]+'<button data-y="'+years[i]+'" onclick="delYearAdmin(this.getAttribute('data-y'))" style="background:none;border:none;color:#e63946;cursor:pointer;font-size:12px;padding:0">x</button></span>';
   }
   d.innerHTML='<div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:24px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto">'
     +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">'
