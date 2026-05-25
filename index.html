@@ -133,6 +133,142 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
 </div>
 <script>
 
+
+// ── ADMIN ────────────────────────────────────────────────────────────────────
+var ADMIN_PASS = 'Napoli2025!';
+
+function openAdmin() {
+  var o = document.getElementById('admin-overlay');
+  if (o) { o.style.display = 'flex'; }
+  var p = document.getElementById('admin-pwd');
+  if (p) { p.value = ''; setTimeout(function(){p.focus();}, 100); }
+  var e = document.getElementById('admin-err');
+  if (e) e.textContent = '';
+}
+
+function closeAdmin() {
+  var o = document.getElementById('admin-overlay');
+  if (o) o.style.display = 'none';
+}
+
+function checkAdmin() {
+  var pwd = document.getElementById('admin-pwd');
+  if (!pwd) return;
+  if (pwd.value === ADMIN_PASS) {
+    closeAdmin();
+    openAdminPanel();
+  } else {
+    var err = document.getElementById('admin-err');
+    if (err) err.textContent = 'Password errata';
+    pwd.value = '';
+    pwd.focus();
+  }
+}
+
+function openAdminPanel() {
+  var o = document.getElementById('adminp-overlay');
+  if (!o) return;
+  o.style.display = 'flex';
+
+  // Stats
+  var years = [];
+  var ym = {};
+  for (var i = 0; i < allDraws.length; i++) {
+    var y = getYear(allDraws[i]);
+    if (!ym[y]) { ym[y] = 1; years.push(y); }
+  }
+  years.sort();
+  var premDate = localStorage.getItem('lotto_premium_date') || 'Mai';
+  var statsEl = document.getElementById('admin-stats');
+  if (statsEl) {
+    statsEl.innerHTML =
+      '<div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">STATISTICHE</div>'
+      + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">'
+      + '<div style="text-align:center;background:#0d0d1c;border-radius:7px;padding:8px"><div style="font-family:monospace;font-size:20px;color:#c9a227;font-weight:700">' + allDraws.length + '</div><div style="font-size:9px;color:#9999bb">Righe totali</div></div>'
+      + '<div style="text-align:center;background:#0d0d1c;border-radius:7px;padding:8px"><div style="font-family:monospace;font-size:20px;color:#c9a227;font-weight:700">' + years.length + '</div><div style="font-size:9px;color:#9999bb">Anni</div></div>'
+      + '</div>'
+      + '<div style="text-align:center;padding:6px;background:#0d0d1c;border-radius:7px"><span style="font-size:11px;color:' + (isPremium() ? '#57cc99' : '#e63946') + ';font-weight:700">' + (isPremium() ? 'PREMIUM dal ' + premDate : 'FREE') + '</span></div>';
+  }
+
+  // Years list
+  var yearsEl = document.getElementById('admin-years');
+  var yearsList = document.getElementById('admin-years-list');
+  if (years.length && yearsEl && yearsList) {
+    yearsEl.style.display = 'block';
+    yearsList.innerHTML = '';
+    for (var i = 0; i < years.length; i++) {
+      var span = document.createElement('span');
+      span.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:#0d0d1c;border:1px solid rgba(201,162,39,.4);border-radius:5px;padding:3px 8px;font-size:10px;color:#c9a227;font-family:monospace';
+      span.textContent = years[i];
+      var btn = document.createElement('button');
+      btn.textContent = 'x';
+      btn.style.cssText = 'background:none;border:none;color:#e63946;cursor:pointer;font-size:12px;padding:0;margin-left:3px';
+      (function(y) { btn.addEventListener('click', function() { delYearAdmin(y); }); })(years[i]);
+      span.appendChild(btn);
+      yearsList.appendChild(span);
+    }
+  }
+
+  // Premium button
+  var premBtn = document.getElementById('admin-premium-btn');
+  if (premBtn) {
+    if (isPremium()) {
+      premBtn.innerHTML = '<button class="bgh" style="width:100%;color:#e63946;border-color:#e63946" id="revoke-btn">Revoca accesso Premium</button>';
+      var rb = document.getElementById('revoke-btn');
+      if (rb) rb.addEventListener('click', function() {
+        if (confirm('Revocare Premium?')) {
+          localStorage.removeItem('lotto_premium');
+          localStorage.removeItem('lotto_premium_date');
+          closeAdminPanel();
+          renderAll();
+        }
+      });
+    } else {
+      premBtn.innerHTML = '<button class="bgold" style="width:100%" id="activate-btn">Attiva Premium (admin)</button>';
+      var ab = document.getElementById('activate-btn');
+      if (ab) ab.addEventListener('click', function() { unlockPremium(); closeAdminPanel(); });
+    }
+  }
+
+  // Import file listener
+  var importFile = document.getElementById('admin-import-file');
+  if (importFile) {
+    importFile.onchange = function(e) { importData(e); closeAdminPanel(); };
+  }
+}
+
+function closeAdminPanel() {
+  var o = document.getElementById('adminp-overlay');
+  if (o) o.style.display = 'none';
+}
+
+function delYearAdmin(y) {
+  if (!confirm('Eliminare tutti i dati del ' + y + '?')) return;
+  var filtered = [];
+  for (var i = 0; i < allDraws.length; i++) {
+    if (getYear(allDraws[i]) !== y) filtered.push(allDraws[i]);
+  }
+  dbSaveAll(filtered).then(function() {
+    allDraws = filtered;
+    closeAdminPanel();
+    renderAll();
+    setTimeout(openAdminPanel, 200);
+  });
+}
+
+function adminClearAll() {
+  if (!confirm('Cancellare TUTTI i dati? Azione irreversibile.')) return;
+  dbClearAll().then(function() { allDraws = []; closeAdminPanel(); renderAll(); });
+}
+
+// Enter key for admin password
+document.addEventListener('keydown', function(e) {
+  if (e.keyCode === 13) {
+    var o = document.getElementById('admin-overlay');
+    if (o && o.style.display === 'flex') checkAdmin();
+  }
+});
+
 // ── FUNZIONI PREMIUM (definite subito per evitare errori) ─────────────────
 function isPremium(){return localStorage.getItem('lotto_premium')==='YES';}
 function premiumBadge(){
@@ -1400,8 +1536,6 @@ function goTab(id, btn) {
 // ============================================================
 
 // ============================================================
-// AREA AMMINISTRATORE
-// ============================================================
 var ADMIN_PASS = 'Napoli2025!';
 
 function openAdmin(){
@@ -1545,6 +1679,55 @@ function delYearAdmin(y){
   });
 })();
 </script>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:700;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:28px;max-width:360px;width:100%">
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:28px;margin-bottom:6px">&#128274;</div>
+      <div style="font-family:monospace;font-size:13px;color:#c9a227;font-weight:700">AREA AMMINISTRATORE</div>
+    </div>
+    <input id="admin-pwd" type="password" placeholder="Password"
+      style="width:100%;background:#080812;border:1px solid #c9a227;border-radius:7px;color:#c9a227;padding:10px;font-family:monospace;font-size:13px;outline:none;margin-bottom:10px;text-align:center">
+    <div id="admin-err" style="color:#e63946;font-family:monospace;font-size:10px;text-align:center;height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button onclick="checkAdmin()" class="bgold" style="flex:1">Accedi</button>
+      <button onclick="closeAdmin()" class="bgh" style="flex:1">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminp-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:700;align-items:center;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:24px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-family:monospace;font-size:13px;color:#c9a227;font-weight:700">&#9881; PANNELLO ADMIN</div>
+      <button onclick="closeAdminPanel()" class="bgh">x Chiudi</button>
+    </div>
+    <div id="admin-stats" style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px"></div>
+    <div id="admin-years" style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px;display:none">
+      <div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">GESTIONE ANNI</div>
+      <div id="admin-years-list" style="display:flex;flex-wrap:wrap;gap:5px"></div>
+    </div>
+    <div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">BACKUP & RIPRISTINO</div>
+      <button onclick="exportData()" class="bgold" style="width:100%;margin-bottom:8px">&#128190; Esporta backup (.tsv)</button>
+      <label style="display:flex;align-items:center;justify-content:center;width:100%;background:#09091a;border:1px solid #457b9d;color:#457b9d;border-radius:8px;padding:9px;font-family:monospace;font-size:10px;font-weight:700;cursor:pointer;text-transform:uppercase">
+        &#128194; Importa backup
+        <input type="file" accept=".tsv,.txt" id="admin-import-file" style="display:none">
+      </label>
+    </div>
+    <div id="admin-premium-section" style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">GESTIONE PREMIUM</div>
+      <div id="admin-premium-btn"></div>
+    </div>
+    <div style="background:rgba(230,57,70,.06);border:1px solid rgba(230,57,70,.2);border-radius:10px;padding:12px">
+      <div style="font-family:monospace;font-size:9px;color:#e63946;letter-spacing:2px;margin-bottom:8px">ZONA PERICOLO</div>
+      <button onclick="adminClearAll()" class="bgh" style="width:100%;color:#e63946;border-color:#e63946">&#128465; Cancella tutti i dati</button>
+    </div>
+  </div>
+</div>
+
 <script>
 if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js');}
 function loadServerData(){fetch('./data/latest.json?t='+Date.now()).then(function(r){return r.json();}).then(function(data){var draws=data.draws||[];if(!draws.length)return;var seen={};for(var i=0;i<allDraws.length;i++)seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;var newOnes=[];for(var i=0;i<draws.length;i++){var d=draws[i];if(d.date&&d.ruota&&d.nums&&!seen[d.date+'|'+d.ruota]){newOnes.push(d);seen[d.date+'|'+d.ruota]=1;}}if(newOnes.length>0){var merged=allDraws.concat(newOnes);dbSaveAll(merged).then(function(){allDraws=merged;renderAll();});}var ul=document.getElementById('last-update');if(ul&&data.last_update)ul.textContent='Agg: '+data.last_update;}).catch(function(){});}
