@@ -341,14 +341,12 @@ function renderAll() {
   years.sort();
 
   var h = '<button class="bgold" style="font-size:9px;padding:5px 12px" onclick="openModal()">+ Carica estrazioni</button>';
-  h += '<button class="bgh" style="border-color:#57cc99;color:#57cc99;font-size:9px;padding:5px 10px" onclick="exportData()">Backup</button>';
-  h += '<label style="border:1px solid #457b9d;color:#457b9d;border-radius:6px;padding:5px 10px;font-family:monospace;font-size:9px;cursor:pointer">Ripristina<input type="file" accept=".tsv,.txt" onchange="importData(event)" style="display:none"></label>';
   for (var i=0;i<years.length;i++) {
     h += '<span class="tag">'+years[i]+'<button onclick="delYear(\''+years[i]+'\')">x</button></span>';
   }
   if (allDraws.length) h += '<span style="font-family:monospace;font-size:9px;color:#6666aa">'+allDraws.length+' righe</span>';
   document.getElementById('yrow').innerHTML = h;
-  if(!document.getElementById('last-update')){var ud=document.createElement('div');ud.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';ud.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span><span id="update-info" style="font-family:monospace;font-size:9px;color:#57cc99"></span><button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna</button>';document.getElementById('yrow').appendChild(ud);}
+  if(!document.getElementById('last-update')){var ud=document.createElement('div');ud.style.cssText='display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:5px;width:100%';ud.innerHTML='<span id="last-update" style="font-family:monospace;font-size:9px;color:#555570"></span><button onclick="loadServerData()" class="bgh" style="font-size:9px;padding:3px 8px;margin-left:auto">Aggiorna</button>';document.getElementById('yrow').appendChild(ud);}
   // Mostra badge premium/free nell header
   var badge = document.createElement('span');
   badge.innerHTML = premiumBadge();
@@ -1434,8 +1432,8 @@ function goTab(id, btn) {
 })();
 </script>
 <script>
-if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').then(function(){navigator.serviceWorker.addEventListener('message',function(e){if(e.data&&e.data.type==='DATA_UPDATED')loadServerData();});});}
-function loadServerData(){fetch('./data/latest.json?t='+Date.now()).then(function(r){return r.json();}).then(function(data){var draws=data.draws||[];if(!draws.length)return;var seen={};for(var i=0;i<allDraws.length;i++)seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;var newOnes=[];for(var i=0;i<draws.length;i++){var d=draws[i];if(d.date&&d.ruota&&d.nums&&!seen[d.date+'|'+d.ruota]){newOnes.push(d);seen[d.date+'|'+d.ruota]=1;}}if(newOnes.length>0){var merged=allDraws.concat(newOnes);dbSaveAll(merged).then(function(){allDraws=merged;renderAll();var el=document.getElementById('update-info');if(el)el.textContent='+'+newOnes.length+' nuove';});}var ul=document.getElementById('last-update');if(ul&&data.last_update)ul.textContent='Agg: '+data.last_update;}).catch(function(){});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js');}
+function loadServerData(){fetch('./data/latest.json?t='+Date.now()).then(function(r){return r.json();}).then(function(data){var draws=data.draws||[];if(!draws.length)return;var seen={};for(var i=0;i<allDraws.length;i++)seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;var newOnes=[];for(var i=0;i<draws.length;i++){var d=draws[i];if(d.date&&d.ruota&&d.nums&&!seen[d.date+'|'+d.ruota]){newOnes.push(d);seen[d.date+'|'+d.ruota]=1;}}if(newOnes.length>0){var merged=allDraws.concat(newOnes);dbSaveAll(merged).then(function(){allDraws=merged;renderAll();});}var ul=document.getElementById('last-update');if(ul&&data.last_update)ul.textContent='Agg: '+data.last_update;}).catch(function(){});}
 setTimeout(loadServerData,1500);
 var installPrompt=null;
 window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();installPrompt=e;var b=document.getElementById('install-banner');if(b)b.style.display='flex';});
