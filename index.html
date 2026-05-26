@@ -60,53 +60,130 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
 </head>
 <body>
 
-<!-- DISCLAIMER GIOCO RESPONSABILE -->
-<div id="disclaimer-bar" style="background:linear-gradient(135deg,#1a0a0a,#0d0d1c);border-bottom:2px solid #e63946;padding:14px 18px;">
-  <div style="max-width:960px;margin:0 auto">
-    <div style="display:flex;align-items:flex-start;gap:12px">
-      <div style="font-size:22px;flex-shrink:0;margin-top:2px">⚠️</div>
-      <div>
-        <div style="font-family:monospace;font-size:11px;color:#e63946;font-weight:700;letter-spacing:2px;margin-bottom:6px">
-          AVVISO LEGALE OBBLIGATORIO — GIOCO RESPONSABILE
-        </div>
-        <p style="font-size:12px;color:#e8e8f0;line-height:1.8;margin-bottom:6px">
-          <strong style="color:#c9a227">Questo sito fornisce esclusivamente analisi statistiche a scopo informativo.</strong>
-          Non costituisce un sistema di previsione delle vincite, non garantisce risultati e non incoraggia la partecipazione al gioco d'azzardo.
-          L'autore <strong style="color:#c9a227">non è responsabile</strong> di eventuali perdite economiche derivanti dall'utilizzo di queste informazioni.
-        </p>
-        <p style="font-size:12px;color:#e8e8f0;line-height:1.8;margin-bottom:6px">
-          Il gioco d'azzardo può causare <strong style="color:#e63946">dipendenza patologica</strong>.
-          Ai sensi del <strong>D.Lgs. 158/2012 (Decreto Balduzzi)</strong> e della normativa ADM vigente,
-          il gioco è <strong style="color:#e63946">vietato ai minori di 18 anni</strong> e alle persone vulnerabili.
-          Ai sensi della <strong>Direttiva UE 2018/1972</strong> e del <strong>GDPR (Reg. UE 2016/679)</strong>,
-          l'autore declina ogni responsabilità per l'uso improprio dei dati statistici forniti.
-        </p>
-        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:8px">
-          <div style="background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.4);border-radius:6px;padding:6px 12px">
-            <span style="font-family:monospace;font-size:10px;color:#e63946;font-weight:700">🆘 GIOCO RESPONSABILE</span>
-            <span style="font-family:monospace;font-size:11px;color:#ffffff;margin-left:8px">Numero Verde: <strong>800 274 274</strong></span>
-            <span style="font-size:10px;color:#9999bb;margin-left:6px">(gratuito, attivo 24h)</span>
-          </div>
-          <div style="background:rgba(201,162,39,.08);border:1px solid rgba(201,162,39,.3);border-radius:6px;padding:6px 12px">
-            <span style="font-family:monospace;font-size:10px;color:#c9a227">🎰 Autorità competente:</span>
-            <span style="font-size:10px;color:#9999bb;margin-left:6px">ADM — Agenzia delle Dogane e dei Monopoli</span>
-          </div>
-          <button onclick="document.getElementById('disclaimer-bar').style.display='none';localStorage.setItem('disclaimer_ok','1')"
-            style="background:transparent;border:1px solid #555570;color:#555570;border-radius:5px;padding:5px 12px;font-family:monospace;font-size:9px;cursor:pointer;white-space:nowrap">
-            Ho letto e compreso ✓
-          </button>
-        </div>
-      </div>
+<!-- DISCLAIMER FISSO IN CIMA (sempre visibile) -->
+<div id="disc-bar" style="background:linear-gradient(135deg,#1a0505,#0d0d1c);border-bottom:2px solid #e63946;padding:8px 18px;display:none">
+  <div style="max-width:960px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+    <span style="font-size:14px">⚠️</span>
+    <span style="font-family:monospace;font-size:10px;color:#e63946;font-weight:700">SOLO USO STATISTICO</span>
+    <span style="font-size:11px;color:#9999bb">Il gioco d'azzardo può causare dipendenza. Vietato ai minori di 18 anni.</span>
+    <span style="font-family:monospace;font-size:10px;color:#c9a227;margin-left:auto">&#128138; 800 274 274</span>
+    <button onclick="document.getElementById('disc-bar').style.display='none'" style="background:none;border:none;color:#555570;cursor:pointer;font-size:14px;padding:0">&#x2715;</button>
+  </div>
+</div>
+
+<!-- DISCLAIMER FLUTTUANTE (prima visita) -->
+<div id="disc-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:900;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#0d0d1c;border:2px solid #e63946;border-radius:16px;padding:28px;max-width:520px;width:100%;
+    animation:discIn .4s ease;position:relative;max-height:90vh;overflow-y:auto">
+    <style>
+      @keyframes discIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    </style>
+    <!-- Header -->
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:42px;margin-bottom:8px">⚠️</div>
+      <div style="font-family:monospace;font-size:15px;color:#e63946;font-weight:700;letter-spacing:2px">AVVISO LEGALE IMPORTANTE</div>
+      <div style="font-family:monospace;font-size:10px;color:#9999bb;margin-top:4px;letter-spacing:1px">Leggere attentamente prima di continuare</div>
+    </div>
+    <!-- Contenuto -->
+    <div style="background:#09091a;border:1px solid rgba(230,57,70,.3);border-radius:10px;padding:16px;margin-bottom:14px">
+      <p style="font-size:13px;color:#e8e8f0;line-height:1.9;margin-bottom:10px">
+        <strong style="color:#c9a227">Lotto Prediction Engine</strong> fornisce esclusivamente
+        <strong>analisi statistiche a scopo puramente informativo</strong>.
+        Non costituisce un sistema di previsione delle vincite, non garantisce alcun risultato
+        e <strong>non incoraggia la partecipazione al gioco d'azzardo</strong>.
+      </p>
+      <p style="font-size:13px;color:#e8e8f0;line-height:1.9;margin-bottom:10px">
+        L'autore <strong style="color:#c9a227">Giuseppe Iermano</strong> declina ogni
+        <strong>responsabilità civile e penale</strong> per eventuali perdite economiche
+        o danni derivanti dall'utilizzo di queste informazioni, ai sensi degli artt.
+        1218 e 2043 c.c. e della normativa europea vigente.
+      </p>
+      <p style="font-size:13px;color:#e8e8f0;line-height:1.9">
+        Il gioco d'azzardo può causare <strong style="color:#e63946">dipendenza patologica</strong>.
+        Ai sensi del <strong>D.Lgs. 158/2012</strong> (Decreto Balduzzi), della normativa
+        <strong>ADM</strong> e della <strong>Direttiva UE 2018/1972</strong>,
+        il gioco è <strong style="color:#e63946">vietato ai minori di 18 anni</strong>
+        e alle persone in condizione di vulnerabilità.
+      </p>
+    </div>
+    <!-- Numero verde -->
+    <div style="background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.4);border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
+      <div style="font-family:monospace;font-size:11px;color:#e63946;font-weight:700;margin-bottom:4px">🆘 SUPPORTO GIOCO RESPONSABILE</div>
+      <div style="font-family:monospace;font-size:20px;color:#ffffff;font-weight:700;letter-spacing:2px">800 274 274</div>
+      <div style="font-size:11px;color:#9999bb;margin-top:3px">Numero Verde ADM — Gratuito — Attivo 24 ore su 24</div>
+    </div>
+    <!-- Checkbox + bottone -->
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:16px">
+      <input type="checkbox" id="disc-check" style="width:18px;height:18px;margin-top:2px;cursor:pointer;accent-color:#c9a227">
+      <label for="disc-check" style="font-size:12px;color:#e8e8f0;line-height:1.6;cursor:pointer">
+        Dichiaro di avere <strong>almeno 18 anni</strong>, di aver letto e compreso l'avviso legale,
+        e di utilizzare questo strumento esclusivamente per analisi statistica personale.
+      </label>
+    </div>
+    <button id="disc-accept-btn" onclick="acceptDisclaimer()" disabled
+      style="width:100%;background:#333;color:#666;border:none;border-radius:8px;padding:13px;
+      font-family:monospace;font-size:12px;font-weight:700;cursor:not-allowed;letter-spacing:1px;
+      transition:all .3s" id="disc-btn">
+      SPUNTA LA CASELLA PER CONTINUARE
+    </button>
+    <div style="text-align:center;margin-top:10px">
+      <span style="font-size:10px;color:#333350;font-family:monospace">
+        Conforme a D.Lgs. 158/2012 · ADM · Direttiva UE 2018/1972 · GDPR Reg. UE 2016/679
+      </span>
     </div>
   </div>
 </div>
+
 <script>
-// Nascondi disclaimer se già accettato
-if(localStorage.getItem('disclaimer_ok')==='1'){
-  var db=document.getElementById('disclaimer-bar');
-  if(db) db.style.display='none';
+// Attiva/disattiva pulsante quando si spunta la checkbox
+document.addEventListener('DOMContentLoaded', function() {
+  var chk = document.getElementById('disc-check');
+  var btn = document.getElementById('disc-accept-btn');
+  if (chk && btn) {
+    chk.addEventListener('change', function() {
+      if (chk.checked) {
+        btn.disabled = false;
+        btn.style.background = 'linear-gradient(135deg,#c9a227,#f0c040)';
+        btn.style.color = '#06060e';
+        btn.style.cursor = 'pointer';
+        btn.textContent = 'HO LETTO E ACCETTO — ENTRA';
+      } else {
+        btn.disabled = true;
+        btn.style.background = '#333';
+        btn.style.color = '#666';
+        btn.style.cursor = 'not-allowed';
+        btn.textContent = 'SPUNTA LA CASELLA PER CONTINUARE';
+      }
+    });
+  }
+
+  // Mostra il modal se prima visita
+  if (!localStorage.getItem('disc_accepted')) {
+    var modal = document.getElementById('disc-modal');
+    if (modal) modal.style.display = 'flex';
+  } else {
+    // Mostra solo la barra in cima
+    var bar = document.getElementById('disc-bar');
+    if (bar) bar.style.display = 'block';
+  }
+});
+
+function acceptDisclaimer() {
+  localStorage.setItem('disc_accepted', '1');
+  var modal = document.getElementById('disc-modal');
+  if (modal) {
+    modal.style.opacity = '0';
+    modal.style.transition = 'opacity .3s';
+    setTimeout(function() {
+      modal.style.display = 'none';
+      // Mostra la barra sottile in cima
+      var bar = document.getElementById('disc-bar');
+      if (bar) bar.style.display = 'block';
+    }, 300);
+  }
 }
 </script>
+
 
 <div class="hdr">
   <h1 style="display:flex;align-items:center;flex-wrap:wrap;gap:6px">
