@@ -57,6 +57,77 @@ input[type=color]{width:36px;height:36px;border:2px solid #333;border-radius:50%
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}.fi{animation:fi .25s ease}
 @keyframes pl{0%,100%{opacity:1}50%{opacity:.25}}.pl{animation:pl 1.6s infinite}
 </style>
+
+<!-- FIREBASE SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════
+// CONFIGURAZIONE FIREBASE — sostituire con i propri dati
+// Guida: https://console.firebase.google.com
+// ══════════════════════════════════════════════════════════════
+var FIREBASE_CONFIG = {
+  apiKey:            "INSERISCI_QUI_API_KEY",
+  authDomain:        "INSERISCI_QUI.firebaseapp.com",
+  databaseURL:       "https://INSERISCI_QUI-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "INSERISCI_QUI",
+  storageBucket:     "INSERISCI_QUI.appspot.com",
+  messagingSenderId: "INSERISCI_QUI",
+  appId:             "INSERISCI_QUI"
+};
+
+var firebaseReady = false;
+var firebaseDB = null;
+
+try {
+  if (FIREBASE_CONFIG.apiKey !== "INSERISCI_QUI_API_KEY") {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseDB = firebase.database();
+    firebaseReady = true;
+    console.log("Firebase connesso ✓");
+  }
+} catch(e) { console.log("Firebase non configurato:", e.message); }
+
+// ── FUNZIONI DATABASE ──────────────────────────────────────────
+async function getVisitorIP() {
+  try {
+    var r = await fetch("https://api.ipify.org?format=json");
+    var d = await r.json();
+    return d.ip || "sconosciuto";
+  } catch(e) { return "sconosciuto"; }
+}
+
+async function logRegistration(tipo, extra) {
+  if (!firebaseReady) return;
+  var ip = await getVisitorIP();
+  var now = new Date();
+  var record = {
+    ip:        ip,
+    tipo:      tipo,           // "disclaimer" | "premium"
+    data:      now.toLocaleDateString("it-IT"),
+    ora:       now.toLocaleTimeString("it-IT"),
+    timestamp: now.toISOString(),
+    userAgent: navigator.userAgent.substring(0, 100),
+    extra:     extra || ""
+  };
+  try {
+    await firebaseDB.ref("registrazioni").push(record);
+    console.log("Registrazione salvata:", tipo, ip);
+  } catch(e) { console.log("Errore Firebase:", e.message); }
+}
+
+async function loadRegistrations() {
+  if (!firebaseReady) return [];
+  try {
+    var snap = await firebaseDB.ref("registrazioni").once("value");
+    var data = snap.val();
+    if (!data) return [];
+    return Object.entries(data).map(function(e){ return Object.assign({id:e[0]}, e[1]); })
+      .sort(function(a,b){ return new Date(b.timestamp) - new Date(a.timestamp); });
+  } catch(e) { console.log("Errore lettura Firebase:", e.message); return []; }
+}
+</script>
+
 </head>
 <body>
 
@@ -170,6 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function acceptDisclaimer() {
   localStorage.setItem('disc_accepted', '1');
+  logRegistration("disclaimer", "18+ accettato");
   var modal = document.getElementById('disc-modal');
   if (modal) {
     modal.style.opacity = '0';
@@ -1753,9 +1825,12 @@ function checkAdmin(){
 <!-- ADMIN PANEL -->
 <div id="adminp-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:700;align-items:center;justify-content:center;padding:16px;overflow-y:auto">
   <div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:24px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
       <div style="font-family:monospace;font-size:13px;color:#c9a227;font-weight:700">&#9881; PANNELLO ADMIN</div>
-      <button onclick="closeAdminPanel()" class="bgh">x Chiudi</button>
+      <div style="display:flex;gap:6px">
+        <button onclick="openManager()" style="background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;border:none;border-radius:6px;padding:7px 14px;font-family:monospace;font-size:9px;font-weight:700;cursor:pointer;letter-spacing:1px">&#128202; AREA GESTORE</button>
+        <button onclick="closeAdminPanel()" class="bgh">x Chiudi</button>
+      </div>
     </div>
     <div id="admin-stats" style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px"></div>
     <div id="admin-years" style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px;display:none">
@@ -1780,6 +1855,279 @@ function checkAdmin(){
     </div>
   </div>
 </div>
+
+
+<!-- AREA RISERVATA GESTORE -->
+<div id="manager-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.97);z-index:800;overflow-y:auto">
+  <div style="max-width:900px;margin:0 auto;padding:24px 16px">
+
+    <!-- Header -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div style="font-family:monospace;font-size:16px;color:#c9a227;font-weight:700">&#9881; AREA RISERVATA GESTORE</div>
+        <div style="font-size:11px;color:#9999bb;margin-top:3px">Giuseppe Iermano — Lotto Prediction Engine</div>
+      </div>
+      <button onclick="closeManager()" style="background:transparent;border:1px solid #e63946;color:#e63946;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer">&#x2715; ESCI</button>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid #1c1c2e;overflow-x:auto">
+      <button class="mgr-tab a" onclick="mgrTab('registrazioni',this)">&#128203; Registrazioni</button>
+      <button class="mgr-tab" onclick="mgrTab('aggiornamento',this)">&#128190; Aggiornamento Dati</button>
+      <button class="mgr-tab" onclick="mgrTab('statistiche',this)">&#128202; Statistiche</button>
+    </div>
+
+    <!-- Panel Registrazioni -->
+    <div id="mgr-registrazioni">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div style="font-family:monospace;font-size:10px;color:#c9a227;letter-spacing:2px">UTENTI REGISTRATI (IP + DICHIARAZIONE 18+)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onclick="refreshRegistrations()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:6px;padding:6px 12px;font-family:monospace;font-size:9px;cursor:pointer">&#8635; Aggiorna</button>
+          <button onclick="exportRegistrationsCSV()" style="background:rgba(87,204,153,.12);border:1px solid rgba(87,204,153,.3);color:#57cc99;border-radius:6px;padding:6px 12px;font-family:monospace;font-size:9px;cursor:pointer">&#128229; Esporta CSV</button>
+        </div>
+      </div>
+
+      <!-- Filtri -->
+      <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+        <button onclick="filterRegs('tutti')" class="reg-filter a" data-filter="tutti">Tutti</button>
+        <button onclick="filterRegs('disclaimer')" class="reg-filter" data-filter="disclaimer">Dichiarazione 18+</button>
+        <button onclick="filterRegs('premium')" class="reg-filter" data-filter="premium">Premium (paganti)</button>
+      </div>
+
+      <div id="mgr-reg-content" style="font-family:monospace;font-size:11px;color:#9999bb;text-align:center;padding:30px">
+        <div class="pl">Caricamento registrazioni...</div>
+      </div>
+    </div>
+
+    <!-- Panel Aggiornamento Dati -->
+    <div id="mgr-aggiornamento" style="display:none">
+      <div style="font-family:monospace;font-size:10px;color:#c9a227;letter-spacing:2px;margin-bottom:14px">AGGIORNAMENTO DATABASE ESTRAZIONI</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-bottom:14px">
+        <div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:16px">
+          <div style="font-size:10px;color:#c9a227;font-family:monospace;margin-bottom:8px">&#128229; CARICA NUOVE ESTRAZIONI</div>
+          <p style="font-size:12px;color:#9999bb;margin-bottom:12px;line-height:1.6">Carica un file TSV con le nuove estrazioni da aggiungere al database.</p>
+          <label style="display:block;background:#0d0d1c;border:1px solid #c9a227;border-radius:8px;padding:10px;text-align:center;font-family:monospace;font-size:10px;color:#c9a227;cursor:pointer">
+            &#128194; Seleziona file TSV
+            <input type="file" accept=".tsv,.txt" onchange="mgrImportData(event)" style="display:none">
+          </label>
+        </div>
+        <div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:16px">
+          <div style="font-size:10px;color:#c9a227;font-family:monospace;margin-bottom:8px">&#128190; BACKUP COMPLETO</div>
+          <p style="font-size:12px;color:#9999bb;margin-bottom:12px;line-height:1.6">Esporta tutti i dati in un file TSV come backup di sicurezza.</p>
+          <button onclick="mgrExportData()" style="width:100%;background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;border:none;border-radius:8px;padding:10px;font-family:monospace;font-size:10px;font-weight:700;cursor:pointer">Esporta backup (.tsv)</button>
+        </div>
+        <div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:16px">
+          <div style="font-size:10px;color:#c9a227;font-family:monospace;margin-bottom:8px">&#128203; STATO DATABASE</div>
+          <div id="mgr-db-status" style="font-size:13px;color:#e8e8f0;line-height:1.8"></div>
+        </div>
+      </div>
+      <div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.2);border-radius:8px;padding:12px">
+        <div style="font-size:10px;color:#c9a227;font-family:monospace;margin-bottom:6px">AGGIORNAMENTO AUTOMATICO</div>
+        <p style="font-size:12px;color:#9999bb;line-height:1.6">Il sistema GitHub Actions aggiorna automaticamente le estrazioni ogni martedi, giovedi e sabato alle 21:30. Ultimo aggiornamento: <span id="mgr-last-update" style="color:#c9a227">--</span></p>
+      </div>
+    </div>
+
+    <!-- Panel Statistiche -->
+    <div id="mgr-statistiche" style="display:none">
+      <div style="font-family:monospace;font-size:10px;color:#c9a227;letter-spacing:2px;margin-bottom:14px">STATISTICHE SITO</div>
+      <div id="mgr-stats-content" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px"></div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.mgr-tab{padding:8px 16px;border:none;cursor:pointer;font-family:monospace;font-size:9px;letter-spacing:1px;background:transparent;color:#444460;text-transform:uppercase;border-bottom:2px solid transparent;white-space:nowrap}
+.mgr-tab.a{color:#c9a227;border-bottom-color:#c9a227}
+.reg-filter{padding:5px 12px;border-radius:5px;font-family:monospace;font-size:9px;cursor:pointer;border:1px solid #1c1c2e;background:transparent;color:#444460}
+.reg-filter.a{border-color:#c9a227;color:#c9a227;background:rgba(201,162,39,.1)}
+.reg-row{display:grid;gap:8px;padding:10px 8px;border-bottom:1px solid #090912;align-items:center;font-size:11px}
+</style>
+
+
+<script>
+// ── AREA GESTORE ──────────────────────────────────────────────────────────────
+var MANAGER_PASS = 'Admin2025!';
+var allRegsCache = [];
+var currentFilter = 'tutti';
+
+function openManager() {
+  var o = document.getElementById('admin-overlay');
+  if (o) o.style.display = 'none';
+  var m = document.getElementById('manager-overlay');
+  if (m) {
+    m.style.display = 'block';
+    refreshRegistrations();
+    updateManagerStats();
+  }
+}
+
+function closeManager() {
+  var m = document.getElementById('manager-overlay');
+  if (m) m.style.display = 'none';
+}
+
+function mgrTab(id, btn) {
+  document.querySelectorAll('.mgr-tab').forEach(function(t){t.classList.remove('a');});
+  btn.classList.add('a');
+  ['registrazioni','aggiornamento','statistiche'].forEach(function(t){
+    var el = document.getElementById('mgr-'+t);
+    if (el) el.style.display = t===id ? 'block' : 'none';
+  });
+  if (id === 'aggiornamento') {
+    updateManagerDBStatus();
+  }
+}
+
+function filterRegs(f) {
+  currentFilter = f;
+  document.querySelectorAll('.reg-filter').forEach(function(b){
+    b.classList.toggle('a', b.getAttribute('data-filter')===f);
+  });
+  renderRegs(allRegsCache);
+}
+
+async function refreshRegistrations() {
+  var el = document.getElementById('mgr-reg-content');
+  if (!el) return;
+  if (!firebaseReady) {
+    el.innerHTML = '<div style="color:#e63946;text-align:center;padding:20px;font-family:monospace;font-size:11px">'
+      +'&#9888; Firebase non configurato.<br><br>'
+      +'<span style="color:#9999bb">Per abilitare il tracciamento degli IP:<br>'
+      +'1. Vai su console.firebase.google.com<br>'
+      +'2. Crea un progetto gratuito<br>'
+      +'3. Copia la configurazione nel file HTML<br>'
+      +'4. Abilita Realtime Database</span></div>';
+    return;
+  }
+  el.innerHTML = '<div class="pl" style="text-align:center;padding:20px;color:#c9a227;font-family:monospace">Caricamento...</div>';
+  allRegsCache = await loadRegistrations();
+  renderRegs(allRegsCache);
+}
+
+function renderRegs(regs) {
+  var el = document.getElementById('mgr-reg-content');
+  if (!el) return;
+  var filtered = currentFilter === 'tutti' ? regs : regs.filter(function(r){return r.tipo===currentFilter;});
+  if (!filtered.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:#444460;font-family:monospace">Nessuna registrazione trovata.</div>';
+    return;
+  }
+  var html = '<div style="overflow-x:auto">'
+    + '<div class="reg-row" style="grid-template-columns:130px 90px 80px 80px 1fr;background:#09091a;border-radius:6px;margin-bottom:6px">'
+    + '<span style="color:#c9a227;font-family:monospace;font-size:9px;letter-spacing:1px">IP</span>'
+    + '<span style="color:#c9a227;font-family:monospace;font-size:9px">TIPO</span>'
+    + '<span style="color:#c9a227;font-family:monospace;font-size:9px">DATA</span>'
+    + '<span style="color:#c9a227;font-family:monospace;font-size:9px">ORA</span>'
+    + '<span style="color:#c9a227;font-family:monospace;font-size:9px">INFO</span>'
+    + '</div>';
+
+  filtered.forEach(function(r) {
+    var tipoBadge = r.tipo === 'premium'
+      ? '<span style="background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;border-radius:3px;padding:2px 6px;font-size:9px;font-weight:700">PREMIUM</span>'
+      : '<span style="background:rgba(87,204,153,.2);color:#57cc99;border-radius:3px;padding:2px 6px;font-size:9px">18+ OK</span>';
+    html += '<div class="reg-row" style="grid-template-columns:130px 90px 80px 80px 1fr">'
+      + '<span style="color:#e8e8f0;font-family:monospace">' + (r.ip||'--') + '</span>'
+      + '<span>' + tipoBadge + '</span>'
+      + '<span style="color:#9999bb">' + (r.data||'--') + '</span>'
+      + '<span style="color:#9999bb">' + (r.ora||'--') + '</span>'
+      + '<span style="color:#555570;font-size:10px">' + (r.extra||'') + '</span>'
+      + '</div>';
+  });
+  html += '</div>';
+  html += '<div style="margin-top:10px;font-family:monospace;font-size:9px;color:#444460;text-align:right">'
+    + filtered.length + ' record' + (currentFilter!=='tutti'?' (filtrati '+regs.length+' totali)':'') + '</div>';
+  el.innerHTML = html;
+}
+
+function exportRegistrationsCSV() {
+  if (!allRegsCache.length) { alert('Nessun dato da esportare.'); return; }
+  var filtered = currentFilter==='tutti' ? allRegsCache : allRegsCache.filter(function(r){return r.tipo===currentFilter;});
+  var csv = 'IP,Tipo,Data,Ora,Timestamp,Extra,UserAgent\n';
+  filtered.forEach(function(r) {
+    csv += [r.ip,r.tipo,r.data,r.ora,r.timestamp,r.extra,(r.userAgent||'').replace(/,/g,';')].join(',') + '\n';
+  });
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'registrazioni_lotto_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function updateManagerStats() {
+  var el = document.getElementById('mgr-stats-content');
+  if (!el) return;
+  var totalPremium = allRegsCache.filter(function(r){return r.tipo==='premium';}).length;
+  var totalDisc = allRegsCache.filter(function(r){return r.tipo==='disclaimer';}).length;
+  var years = [];
+  var ym = {};
+  for (var i=0;i<allDraws.length;i++){var y=getYear(allDraws[i]);if(!ym[y]){ym[y]=1;years.push(y);}}
+  years.sort();
+  var cards = [
+    {val:allDraws.length, lbl:'Estrazioni nel DB', col:'#c9a227'},
+    {val:years.length, lbl:'Anni caricati', col:'#c9a227'},
+    {val:totalDisc, lbl:'Utenti 18+ verificati', col:'#57cc99'},
+    {val:totalPremium, lbl:'Utenti Premium', col:'#c9a227'},
+    {val:isPremium()?'SI':'NO', lbl:'Premium questo dispositivo', col:isPremium()?'#57cc99':'#e63946'},
+  ];
+  el.innerHTML = cards.map(function(c) {
+    return '<div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:16px;text-align:center">'
+      +'<div style="font-family:monospace;font-size:26px;color:'+c.col+';font-weight:700">'+c.val+'</div>'
+      +'<div style="font-size:10px;color:#9999bb;margin-top:5px">'+c.lbl+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function updateManagerDBStatus() {
+  var el = document.getElementById('mgr-db-status');
+  if (!el) return;
+  var years = [];
+  var ym = {};
+  for (var i=0;i<allDraws.length;i++){var y=getYear(allDraws[i]);if(!ym[y]){ym[y]=1;years.push(y);}}
+  years.sort();
+  el.innerHTML = '<strong style="color:#c9a227">' + allDraws.length + '</strong> estrazioni<br>'
+    + '<strong style="color:#c9a227">' + years.length + '</strong> anni (' + (years.join(', ')||'nessuno') + ')<br>'
+    + 'Firebase: <strong style="color:'+(firebaseReady?'#57cc99':'#e63946')+'">'+(firebaseReady?'Connesso':'Non configurato')+'</strong>';
+  var lu = document.getElementById('mgr-last-update');
+  var luVal = document.getElementById('last-update');
+  if (lu && luVal) lu.textContent = luVal.textContent || '--';
+}
+
+function mgrImportData(event) {
+  var file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  file.text().then(function(text) {
+    var imported = parse(text);
+    if (!imported.length) { alert('File non valido.'); return; }
+    if (!confirm('Trovate ' + imported.length + ' estrazioni. Aggiungere al database?')) return;
+    var seen = {};
+    for (var i=0;i<allDraws.length;i++) seen[allDraws[i].date+'|'+allDraws[i].ruota]=1;
+    var newOnes = imported.filter(function(d){return !seen[d.date+'|'+d.ruota];});
+    var merged = allDraws.concat(newOnes);
+    dbSaveAll(merged).then(function(){
+      allDraws = merged;
+      renderAll();
+      updateManagerDBStatus();
+      alert('Importate ' + newOnes.length + ' nuove estrazioni!');
+    });
+  });
+}
+
+function mgrExportData() {
+  if (!allDraws.length) { alert('Nessun dato.'); return; }
+  var lines = allDraws.map(function(d){ return d.date+'\t'+d.concorso+'\t'+d.ruota+'\t'+d.nums.join('\t'); });
+  var blob = new Blob([lines.join('\n')], {type:'text/plain;charset=utf-8'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href=url; a.download='lotto_backup_'+new Date().toISOString().slice(0,10)+'.tsv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+  alert('Backup salvato: '+allDraws.length+' estrazioni.');
+}
+</script>
 
 </body>
 </html>
