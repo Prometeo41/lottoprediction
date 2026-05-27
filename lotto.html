@@ -740,6 +740,63 @@ function acceptDisclaimer() {
 <script>
 
 
+
+// ── PUBBLICA DATI SU GITHUB (visibili a tutti) ────────────────────────────
+function publishToGitHub() {
+  var token = localStorage.getItem('gh_token');
+  if (!token) {
+    token = prompt('Inserisci il tuo GitHub Token (ghp_...):\n(viene salvato solo su questo dispositivo)');
+    if (!token || !token.startsWith('ghp_')) { alert('Token non valido.'); return; }
+    localStorage.setItem('gh_token', token);
+  }
+  if (!allDraws.length) { alert('Nessun dato da pubblicare. Carica prima le estrazioni.'); return; }
+
+  var btn = document.getElementById('publish-btn');
+  if (btn) { btn.textContent = 'Pubblicazione...'; btn.disabled = true; }
+
+  // Prepara il JSON
+  var dataObj = {
+    draws: allDraws,
+    last_update: new Date().toLocaleString('it-IT'),
+    total: allDraws.length,
+    status: 'Aggiornato manualmente'
+  };
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(dataObj))));
+
+  // Prendi SHA attuale del file
+  fetch('https://api.github.com/repos/Prometeo41/lottoprediction/contents/data/latest.json', {
+    headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json' }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(info) {
+    var body = { message: 'Aggiornamento dati ' + new Date().toLocaleDateString('it-IT'), content: content };
+    if (info.sha) body.sha = info.sha;
+    return fetch('https://api.github.com/repos/Prometeo41/lottoprediction/contents/data/latest.json', {
+      method: 'PUT',
+      headers: { 'Authorization': 'token ' + token, 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  })
+  .then(function(r) {
+    if (btn) { btn.textContent = 'Pubblica per tutti'; btn.disabled = false; }
+    if (r.status === 200 || r.status === 201) {
+      alert('PUBBLICATO! Tutti i telefoni vedranno i dati tra 2 minuti.\n(' + allDraws.length + ' estrazioni)');
+    } else {
+      r.json().then(function(e){ alert('Errore GitHub: ' + (e.message||r.status) + '\nProva a reimpostare il token dall admin.'); });
+      if (btn) { btn.disabled = false; }
+    }
+  })
+  .catch(function(e) {
+    if (btn) { btn.textContent = 'Pubblica per tutti'; btn.disabled = false; }
+    alert('Errore di connessione: ' + e.message);
+  });
+}
+
+function resetGhToken() {
+  localStorage.removeItem('gh_token');
+  alert('Token rimosso. Al prossimo click su Pubblica ti verrà richiesto di nuovo.');
+}
+
 // ── ADMIN ────────────────────────────────────────────────────────────────────
 var ADMIN_PASS = 'Napoli2025!';
 
@@ -2251,6 +2308,12 @@ function checkAdmin(){
         &#128194; Importa backup
         <input type="file" accept=".tsv,.txt" id="admin-import-file" style="display:none">
       </label>
+    </div>
+    <div style="background:#09091a;border:1px solid rgba(87,204,153,.3);border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="font-family:monospace;font-size:9px;color:#57cc99;letter-spacing:2px;margin-bottom:8px">PUBBLICA DATI PER TUTTI</div>
+      <p style="font-size:11px;color:#9999bb;margin-bottom:10px;line-height:1.6">Rende i dati visibili su tutti i telefoni e dispositivi che aprono il sito.</p>
+      <button id="publish-btn" onclick="publishToGitHub()" style="width:100%;background:linear-gradient(135deg,#57cc99,#3aab78);border:none;border-radius:8px;padding:10px;font-family:monospace;font-size:10px;font-weight:700;cursor:pointer;color:#06060e;margin-bottom:6px">&#127758; Pubblica dati per tutti</button>
+      <button onclick="resetGhToken()" style="width:100%;background:transparent;border:1px solid #333350;color:#555570;border-radius:6px;padding:6px;font-family:monospace;font-size:9px;cursor:pointer">Reimposta token GitHub</button>
     </div>
     <div id="admin-premium-section" style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:12px;margin-bottom:10px">
       <div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:8px">GESTIONE PREMIUM</div>
