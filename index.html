@@ -2254,6 +2254,139 @@ var ADMIN_PASS = 'Napoli2025!';
 
 // ============================================================
 
+
+// ── AUTO-AGGIORNAMENTO ESTRAZIONI ────────────────────────────────────────────
+// Gira all'avvio: se è il giorno dopo un'estrazione (mer/ven/dom) e i dati
+// sono vecchi, scarica automaticamente le nuove estrazioni via browser.
+
+var RUOTE_LIST = ['Bari','Cagliari','Firenze','Genova','Milano',
+                  'Napoli','Palermo','Roma','Torino','Venezia','Nazionale'];
+
+function isUpdateDay() {
+  var day = new Date().getDay(); // 0=dom,1=lun,...,6=sab
+  return day === 0 || day === 3 || day === 5; // dom, mer, ven
+}
+
+function dataDaysAgo(dateStr) {
+  var d = parseItalianDate(dateStr);
+  if (!d) return 999;
+  return Math.floor((new Date() - d) / 86400000);
+}
+
+function parseDrawsFromHTML(html) {
+  var draws = [];
+  // Parser generico: cerca righe con data GG/MM/AAAA + ruota + 5 numeri
+  var dateRe = /(\d{2}\/\d{2}\/\d{4})/g;
+  var ruotaRe = new RegExp('(' + RUOTE_LIST.join('|') + ')', 'gi');
+  var numRe = /\b([1-9]|[1-8]\d|90)\b/g;
+
+  // Cerca blocchi riga per riga (tabelle TSV-like nel DOM)
+  var rows = html.split(/[\n\r<>]+/);
+  var curDate = null, curRuota = null;
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i].trim();
+    if (!row) continue;
+    var dm = row.match(/(\d{2}\/\d{2}\/\d{4})/);
+    if (dm) curDate = dm[1];
+    var rm = row.match(new RegExp('\\b(' + RUOTE_LIST.join('|') + ')\\b', 'i'));
+    if (rm) curRuota = rm[1].charAt(0).toUpperCase() + rm[1].slice(1).toLowerCase();
+    if (curDate && curRuota) {
+      var nums = [];
+      var m;
+      numRe.lastIndex = 0;
+      while ((m = numRe.exec(row)) !== null) {
+        var n = parseInt(m[1]);
+        if (n >= 1 && n <= 90) nums.push(n);
+        if (nums.length === 5) break;
+      }
+      if (nums.length === 5) {
+        draws.push({ date: curDate, ruota: curRuota, nums: nums, concorso: 0 });
+        curRuota = null;
+      }
+    }
+  }
+  return draws;
+}
+
+function autoFetchNewDraws() {
+  if (!isUpdateDay()) return Promise.resolve(0);
+  var lastDate = getLastUpdateDate();
+  if (lastDate && dataDaysAgo(lastDate) < 2) return Promise.resolve(0); // già aggiornato
+
+  console.log('Auto-fetch: cerco nuove estrazioni...');
+
+  var targets = [
+    'https://www.iltrovatore.it/lotto/archivio.php',
+    'https://www.estrazionelotto.it/',
+    'https://www.gioconews.it/lotto/',
+  ];
+  var proxies = [
+    'https://corsproxy.io/?url=',
+    'https://api.allorigins.win/raw?url=',
+    'https://thingproxy.freeboard.io/fetch/',
+  ];
+
+  // Mostra banner di caricamento
+  var banner = document.createElement('div');
+  banner.id = 'auto-update-banner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0d1a0d;border-top:1px solid #57cc99;padding:8px 16px;font-family:monospace;font-size:11px;color:#57cc99;z-index:999;text-align:center';
+  banner.textContent = '🔄 Controllo nuove estrazioni...';
+  document.body.appendChild(banner);
+
+  var attempts = [];
+  for (var p = 0; p < proxies.length; p++) {
+    for (var t = 0; t < targets.length; t++) {
+      attempts.push(proxies[p] + encodeURIComponent(targets[t]));
+    }
+  }
+
+  function tryNext(idx) {
+    if (idx >= attempts.length) {
+      var b = document.getElementById('auto-update-banner');
+      if (b) b.remove();
+      return Promise.resolve(0);
+    }
+    return fetch(attempts[idx], { signal: AbortSignal.timeout ? AbortSignal.timeout(10000) : undefined })
+      .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(html) {
+        if (!html.includes('Napoli') && !html.includes('napoli')) throw new Error('no data');
+        var draws = parseDrawsFromHTML(html);
+        if (draws.length < 10) throw new Error('troppo pochi: ' + draws.length);
+
+        // Filtra solo le nuove
+        var seen = {};
+        for (var i = 0; i < allDraws.length; i++) {
+          seen[allDraws[i].date + '|' + allDraws[i].ruota] = 1;
+        }
+        var newOnes = draws.filter(function(d) { return !seen[d.date + '|' + d.ruota]; });
+
+        if (!newOnes.length) {
+          var b = document.getElementById('auto-update-banner');
+          if (b) { b.textContent = '✅ Dati già aggiornati'; setTimeout(function(){b.remove();}, 2000); }
+          return 0;
+        }
+
+        return dbSaveAll(newOnes).then(function() { return dbGetAll(); }).then(function(rows) {
+          allDraws = rows;
+          renderAll();
+          var b = document.getElementById('auto-update-banner');
+          if (b) { b.textContent = '✅ Aggiunte ' + newOnes.length + ' nuove estrazioni!'; setTimeout(function(){b.remove();}, 3000); }
+          console.log('Auto-fetch OK: +' + newOnes.length + ' estrazioni');
+          return newOnes.length;
+        });
+      })
+      .catch(function(e) {
+        console.log('Auto-fetch tentativo ' + idx + ' fallito:', e.message);
+        return tryNext(idx + 1);
+      });
+  }
+
+  return tryNext(0);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 (function init() {
   applyCSS();
   document.getElementById('p-prev').innerHTML = '<div class="pl" style="text-align:center;padding:40px;font-family:monospace;font-size:12px;color:#c9a227;letter-spacing:2px">CARICAMENTO...</div>';
@@ -2303,6 +2436,8 @@ var ADMIN_PASS = 'Napoli2025!';
     }
   }).then(function() {
     renderAll();
+    // Auto-fetch nuove estrazioni se necessario
+    setTimeout(function() { autoFetchNewDraws(); }, 1500);
   // Mostra schermata benvenuto se prima visita
   if (!localStorage.getItem('lotto_visited')) {
     localStorage.setItem('lotto_visited','1');
