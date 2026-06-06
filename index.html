@@ -443,11 +443,9 @@ function renderLog(all) {
 function exportCSV() {
   var rows = logFilter==='tutti' ? logCache : logCache.filter(function(r){return r.tipo===logFilter;});
   if (!rows.length) { alert('Nessun dato da esportare.'); return; }
-  var csv = 'IP,Tipo,Data,Ora,Timestamp,Extra
-';
+  var csv = 'IP,Tipo,Data,Ora,Timestamp,Extra\n';
   rows.forEach(function(r) {
-    csv += [r.ip,r.tipo,r.data,r.ora,r.ts,r.extra].join(',') + '
-';
+    csv += [r.ip,r.tipo,r.data,r.ora,r.ts,r.extra].join(',') + '\n';
   });
   var blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
   var url = URL.createObjectURL(blob);
@@ -2725,8 +2723,8 @@ function exportCSV() {
       '"'+(r.data||'')+'"',
       '"'+(r.ip||'')+'"',
       '"'+(r.tipo||'')+'"',
-      '"'+(r.extra||'').replace(/"/g,'''') +'"',
-      '"'+(r.userAgent||'').replace(/"/g,'''') +'"'
+      '"'+(r.extra||'').replace(/"/g,'') +'"',
+      '"'+(r.userAgent||'').replace(/"/g,'') +'"'
     ].join(','));
   }
   var blob = new Blob([rows.join('
