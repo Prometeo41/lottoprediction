@@ -2307,6 +2307,31 @@ function checkAdmin(){
       });
     }
   }).then(function() {
+    // Se ancora vuoto, carica automaticamente da GitHub
+    if (!allDraws.length) {
+      document.getElementById('p-prev').innerHTML = '<div class="pl" style="text-align:center;padding:40px;font-family:monospace;font-size:12px;color:#c9a227;letter-spacing:2px">SCARICO DATI DA GITHUB...</div>';
+      return fetch('https://raw.githubusercontent.com/Prometeo41/lottoprediction/main/data/latest.json')
+        .then(function(r) { return r.json(); })
+        .then(function(json) {
+          var draws = json.draws || [];
+          if (!draws.length) return;
+          var seen = {}, unique = [];
+          for (var i = 0; i < draws.length; i++) {
+            var d = draws[i];
+            if (d.date && d.ruota && d.nums) {
+              var k = d.date + '|' + d.ruota;
+              if (!seen[k]) { seen[k] = 1; unique.push(d); }
+            }
+          }
+          if (!unique.length) return;
+          return dbSaveAll(unique).then(function() { return dbGetAll(); }).then(function(r) {
+            allDraws = r;
+            console.log('Auto-caricati ' + allDraws.length + ' dati da GitHub');
+          });
+        })
+        .catch(function(e) { console.log('Auto-load GitHub fallito:', e.message); });
+    }
+  }).then(function() {
     renderAll();
   // Mostra schermata benvenuto se prima visita
   if (!localStorage.getItem('lotto_visited')) {
