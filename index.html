@@ -2250,37 +2250,7 @@ function goTab(id, btn) {
 // ============================================================
 var ADMIN_PASS = 'Napoli2025!';
 
-function openAdmin(){
-  if(document.getElementById('admin-overlay'))return;
-  var d=document.createElement('div');
-  d.id='admin-overlay';
-  d.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:700;display:flex;align-items:center;justify-content:center;padding:16px';
-  d.innerHTML='<div style="background:#0d0d1c;border:2px solid rgba(201,162,39,.5);border-radius:16px;padding:28px;max-width:360px;width:100%">'
-    +'<div style="text-align:center;margin-bottom:18px">'
-    +'<div style="font-size:28px;margin-bottom:6px">&#128274;</div>'
-    +'<div style="font-family:monospace;font-size:13px;color:#c9a227;font-weight:700">AREA AMMINISTRATORE</div>'
-    +'</div>'
-    +'<input id="admin-pwd" type="password" placeholder="Password" '
-    +'style="width:100%;background:#080812;border:1px solid #c9a227;border-radius:7px;color:#c9a227;'
-    +'padding:10px;font-family:monospace;font-size:13px;outline:none;margin-bottom:10px;text-align:center" '
-    +'onkeydown="if(event.keyCode===13)checkAdmin()">'
-    +'<div id="admin-err" style="color:#e63946;font-family:monospace;font-size:10px;text-align:center;height:16px;margin-bottom:8px"></div>'
-    +'<div style="display:flex;gap:8px">'
-    +'<button onclick="checkAdmin()" class="bgold" style="flex:1">Accedi</button>'
-    +'<button onclick="closeAdmin()" class="bgh" style="flex:1">Annulla</button>'
-    +'</div></div>';
-  document.body.appendChild(d);
-  setTimeout(function(){var e=document.getElementById('admin-pwd');if(e)e.focus();},100);
-}
 
-function closeAdmin(){var e=document.getElementById('admin-overlay');if(e)e.remove();}
-
-function checkAdmin(){
-  var pwd=document.getElementById('admin-pwd');
-  if(!pwd)return;
-  if(pwd.value===ADMIN_PASS){closeAdmin();openAdminPanel();}
-  else{var err=document.getElementById('admin-err');if(err)err.textContent='Password errata';pwd.value='';pwd.focus();}
-}
 
 // ============================================================
 
