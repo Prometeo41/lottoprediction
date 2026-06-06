@@ -4,7 +4,7 @@ on:
   schedule:
     # Martedi, giovedi e sabato alle 21:30 ora italiana (20:30 UTC)
     - cron: '30 20 * * 2,4,6'
-  workflow_dispatch:  # consente avvio manuale dal sito GitHub
+  workflow_dispatch:
 
 jobs:
   update:
@@ -21,7 +21,7 @@ jobs:
           python-version: '3.11'
 
       - name: Installa dipendenze
-        run: pip install requests beautifulsoup4 lxml
+        run: pip install requests beautifulsoup4 lxml cloudscraper
 
       - name: Scarica ultime estrazioni
         run: python3 scripts/fetch_lotto.py
