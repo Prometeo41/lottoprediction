@@ -937,16 +937,16 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── FUNZIONI PREMIUM (definite subito per evitare errori) ─────────────────
-function isPremium(){return true;}
+function isPremium(){return localStorage.getItem('lotto_premium')==='YES';}
 function premiumBadge(){
   return isPremium()
     ? '<span style="background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:9px;font-weight:700;margin-left:6px">PREMIUM</span>'
     : '<span style="background:rgba(230,57,70,.15);border:1px solid rgba(230,57,70,.3);color:#e63946;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:9px;font-weight:700;margin-left:6px;cursor:pointer" onclick="showPaywall()">FREE</span>';
 }
 function getPayPalURL(){
-  return 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick'
+  return 'https://www.paypal.com/cgi-bin/webscr?cmd=_xclick-subscriptions'
     +'&business='+encodeURIComponent('iermanogiuseppe@gmail.com')
-    +'&amount=4.99&currency_code=EUR'
+    +'&a3=2.99&p3=1&t3=M&currency_code=EUR&src=1&sra=1'
     +'&item_name='+encodeURIComponent('Lotto Prediction Engine Premium - Peppe Iermano')
     +'&return='+encodeURIComponent('https://prometeo41.github.io/lottoprediction/?premium=unlocked')
     +'&cancel_return='+encodeURIComponent('https://prometeo41.github.io/lottoprediction/')
@@ -1209,7 +1209,7 @@ function renderPrev(data) {
       + '<div style="font-size:32px;margin-bottom:10px">🔒</div>'
       + '<div style="font-family:monospace;font-size:13px;color:#c9a227;margin-bottom:6px">RUOTE PREMIUM</div>'
       + '<p style="font-size:12px;color:#9999bb;margin-bottom:14px">La versione gratuita include solo la ruota di <strong style="color:#c9a227">Napoli</strong>.<br>Sblocca Premium per accedere a tutte le 11 ruote.</p>'
-      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:10px 20px;font-family:monospace;font-size:11px;font-weight:700;text-decoration:none;margin-bottom:8px">&#128178; Sblocca Premium - 4.99 euro</a><br>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:10px 20px;font-family:monospace;font-size:11px;font-weight:700;text-decoration:none;margin-bottom:8px">&#128178; 🔓 Sblocca Premium - 2.99€/mese</a><br>'
       + '<button onclick="setNapoli()" class="bgh" style="margin-top:8px;font-size:10px">Torna a Napoli (Free)</button>'
       + '</div>';
     return;
@@ -1302,8 +1302,8 @@ function renderCop(data) {
       + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
       + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">COPPIE & TERNI - PREMIUM</div>'
       + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Le coppie frequenti, i terni e l analisi avanzata<br>sono disponibili nella versione Premium.</p>'
-      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
-      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">2.99€/mese</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; 🔓 Abbonati con PayPal - 2.99€/mese</a><br>'
       + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
       + '</div>';
     return;
@@ -1387,8 +1387,8 @@ function renderSch(data, years) {
       + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
       + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">SCHEDINA PREDITTIVA - PREMIUM</div>'
       + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Cinquina, quaterna, terno, ambi e jolly<br>sono disponibili nella versione Premium.</p>'
-      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
-      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">2.99€/mese</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; 🔓 Abbonati con PayPal - 2.99€/mese</a><br>'
       + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
       + '</div>';
     return;
@@ -1485,7 +1485,7 @@ function renderRit(data) {
       +'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'+top10+'</div>'
       +'<div style="background:rgba(201,162,39,.06);border:1px solid rgba(201,162,39,.3);border-radius:8px;padding:14px;text-align:center">'
       +'<div style="font-size:13px;color:#9999bb;margin-bottom:12px">La classifica completa di tutti i 90 numeri<br>con trend e date e disponibile nella versione Premium.</div>'
-      +'<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:10px 20px;font-family:monospace;font-size:11px;font-weight:700;text-decoration:none;margin-bottom:8px">&#128178; Sblocca Premium - 4.99 euro</a><br>'
+      +'<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:10px 20px;font-family:monospace;font-size:11px;font-weight:700;text-decoration:none;margin-bottom:8px">&#128178; 🔓 Sblocca Premium - 2.99€/mese</a><br>'
       +'<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:6px 14px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:6px">Ho gia pagato - Sblocca</button>'
       +'</div></div>';
     return;
@@ -1539,8 +1539,8 @@ function renderArc(data) {
       + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
       + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">ARCHIVIO STORICO - PREMIUM</div>'
       + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Lo storico completo di tutte le estrazioni<br>e disponibile nella versione Premium.</p>'
-      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
-      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">2.99€/mese</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; 🔓 Abbonati con PayPal - 2.99€/mese</a><br>'
       + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
       + '</div>';
     return;
@@ -1585,8 +1585,8 @@ function renderLot(data, years) {
       + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
       + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">LOTTOMATICA & BUDGET - PREMIUM</div>'
       + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">Il link diretto a Lottomatica, le giocate<br>consigliate e il gestore budget<br>sono disponibili nella versione Premium.</p>'
-      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
-      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">2.99€/mese</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; 🔓 Abbonati con PayPal - 2.99€/mese</a><br>'
       + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
       + '</div>';
     return;
@@ -1770,8 +1770,8 @@ function renderAllRuote() {
       + '<div style="font-size:48px;margin-bottom:12px">🔒</div>'
       + '<div style="font-family:monospace;font-size:15px;color:#c9a227;margin-bottom:8px">TUTTE LE RUOTE - PREMIUM</div>'
       + '<p style="font-size:13px;color:#9999bb;margin-bottom:20px;line-height:1.7">L analisi completa di tutte le 11 ruote<br>con giocate consigliate e numeri universali<br>e disponibile nella versione Premium.</p>'
-      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">4.99 euro</div>'
-      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; Sblocca con PayPal - 4.99 euro</a><br>'
+      + '<div style="font-size:22px;color:#c9a227;font-weight:700;font-family:monospace;margin-bottom:16px">2.99€/mese</div>'
+      + '<a href="'+getPayPalURL()+'" target="_blank" onclick="setPPPending()" style="display:inline-block;background:linear-gradient(135deg,#0070ba,#1546a0);color:#fff;border-radius:8px;padding:12px 24px;font-family:monospace;font-size:12px;font-weight:700;text-decoration:none;margin-bottom:10px">&#128178; 🔓 Abbonati con PayPal - 2.99€/mese</a><br>'
       + '<button onclick="checkManualUnlock()" style="background:rgba(201,162,39,.12);border:1px solid rgba(201,162,39,.3);color:#c9a227;border-radius:8px;padding:8px 16px;font-family:monospace;font-size:10px;cursor:pointer;margin-top:8px">Ho gia pagato - Sblocca</button>'
       + '</div>';
     return;
