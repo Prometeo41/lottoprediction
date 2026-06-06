@@ -1139,6 +1139,24 @@ function rc(r) { return r>70?'#e63946':r>45?'#f4a261':r>25?'#e9c46a':'#57cc99'; 
 // ============================================================
 // RENDER PRINCIPALE
 // ============================================================
+function parseItalianDate(s) {
+  if (!s) return null;
+  var p = s.split('/');
+  if (p.length === 3) return new Date(parseInt(p[2]), parseInt(p[1])-1, parseInt(p[0]));
+  return null;
+}
+
+function getLastUpdateDate() {
+  if (!allDraws.length) return null;
+  var latest = null;
+  for (var i = 0; i < allDraws.length; i++) {
+    var d = allDraws[i].date;
+    if (!d) continue;
+    if (!latest || parseItalianDate(d) > parseItalianDate(latest)) latest = d;
+  }
+  return latest;
+}
+
 function renderAll() {
   var years = [];
   var ymap = {};
@@ -1150,6 +1168,11 @@ function renderAll() {
     h += '<span class="tag">'+years[i]+'</span>';
   }
   if (allDraws.length) h += '<span style="font-family:monospace;font-size:9px;color:#6666aa">'+allDraws.length+' righe</span>';
+  // Badge ultimo aggiornamento
+  var lastDate = getLastUpdateDate();
+  var daysSince = lastDate ? Math.floor((new Date() - parseItalianDate(lastDate)) / 86400000) : 999;
+  var badgeColor = daysSince <= 3 ? '#57cc99' : daysSince <= 7 ? '#c9a227' : '#e63946';
+  if (lastDate) h += '<span style="font-family:monospace;font-size:9px;color:'+badgeColor+';border:1px solid '+badgeColor+';border-radius:4px;padding:2px 6px;margin-left:4px" title="Ultima estrazione presente">&#128197; '+lastDate+'</span>';
   h += '<button class="bgh" onclick="openAdmin()" style="margin-left:auto;border-color:#555570;color:#555570;font-size:9px;padding:4px 9px" title="Area Amministratore">&#9881;</button>';
   document.getElementById('yrow').innerHTML = h;
   // Mostra badge premium/free nell header
