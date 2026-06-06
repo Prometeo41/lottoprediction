@@ -803,6 +803,7 @@ function resetGhToken() {
 
 // ── ADMIN ────────────────────────────────────────────────────────────────────
 var ADMIN_PASS = 'Napoli2025!';
+var isAdminLogged = false;
 
 function openAdmin() {
   var o = document.getElementById('admin-overlay');
@@ -822,6 +823,7 @@ function checkAdmin() {
   var pwd = document.getElementById('admin-pwd');
   if (!pwd) return;
   if (pwd.value === ADMIN_PASS) {
+    isAdminLogged = true;
     closeAdmin();
     openAdminPanel();
   } else {
@@ -2127,6 +2129,16 @@ function importData(event) {
 var parsedData = [];
 
 function openModal() {
+  if (!isAdminLogged) {
+    // Chiedi password prima di aprire
+    var pwd = prompt('🔒 Area riservata\nInserisci la password amministratore:');
+    if (pwd === null) return; // annullato
+    if (pwd !== ADMIN_PASS) {
+      alert('❌ Password errata. Accesso negato.');
+      return;
+    }
+    isAdminLogged = true;
+  }
   document.getElementById('modal').classList.add('open');
   document.getElementById('ta').value = '';
   document.getElementById('minfo').innerHTML = '';
