@@ -939,7 +939,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── FUNZIONI PREMIUM (definite subito per evitare errori) ─────────────────
-function isPremium(){return localStorage.getItem('lotto_premium')==='YES';}
+function isPremium(){return true;}
 function premiumBadge(){
   return isPremium()
     ? '<span style="background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:9px;font-weight:700;margin-left:6px">PREMIUM</span>'
