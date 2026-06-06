@@ -574,8 +574,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var years=[],ym={};
         imported.forEach(function(d){var y=getYear(d);if(!ym[y]){ym[y]=1;years.push(y);}});
         years.sort();
-        if (!confirm('Trovate '+imported.length+' estrazioni (anni: '+years.join(', ')+').
-Aggiungere al database?')) return;
+        if (!confirm('Trovate '+imported.length+' estrazioni (anni: '+years.join(', ')+').\nAggiungere al database?')) return;
         var seen={};
         allDraws.forEach(function(d){seen[d.date+'|'+d.ruota]=1;});
         var newOnes = imported.filter(function(d){return !seen[d.date+'|'+d.ruota];});
