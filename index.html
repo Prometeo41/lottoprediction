@@ -2371,6 +2371,8 @@ function autoFetchNewDraws() {
           var b = document.getElementById('auto-update-banner');
           if (b) { b.textContent = '✅ Aggiunte ' + newOnes.length + ' nuove estrazioni!'; setTimeout(function(){b.remove();}, 3000); }
           console.log('Auto-fetch OK: +' + newOnes.length + ' estrazioni');
+          // Pubblica automaticamente su GitHub
+          setTimeout(function(){ autoPublishToGitHub(newOnes.length); }, 1000);
           return newOnes.length;
         });
       })
@@ -2383,6 +2385,53 @@ function autoFetchNewDraws() {
   return tryNext(0);
 }
 // ─────────────────────────────────────────────────────────────────────────────
+
+function autoPublishToGitHub(added) {
+  var token = localStorage.getItem('gh_token');
+  if (!token) return; // nessun token salvato, salta
+  var banner = document.getElementById('auto-update-banner');
+
+  var payload = {
+    draws: allDraws,
+    last_update: new Date().toLocaleString('it-IT'),
+    status: 'Auto-pubblicato dopo fetch (+' + added + ' nuove)',
+    total: allDraws.length
+  };
+
+  // Prima recupera SHA attuale
+  fetch('https://api.github.com/repos/Prometeo41/lottoprediction/contents/data/latest.json', {
+    headers: { 'Authorization': 'token ' + token }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(d) {
+    var sha = d.sha;
+    var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload, null, 2))));
+    return fetch('https://api.github.com/repos/Prometeo41/lottoprediction/contents/data/latest.json', {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'token ' + token,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: 'Auto-aggiornamento estrazioni ' + new Date().toLocaleDateString('it-IT'),
+        content: encoded,
+        sha: sha
+      })
+    });
+  })
+  .then(function(r) {
+    if (r.ok) {
+      if (banner) { banner.textContent = '✅ Estrazioni aggiornate e pubblicate!'; setTimeout(function(){banner.remove();}, 3000); }
+      console.log('Auto-publish OK');
+    } else {
+      if (banner) { banner.textContent = '✅ Estrazioni aggiornate (pubblica manualmente)'; setTimeout(function(){banner.remove();}, 3000); }
+    }
+  })
+  .catch(function(e) {
+    if (banner) { banner.textContent = '✅ Estrazioni aggiornate (pubblica manualmente)'; setTimeout(function(){banner.remove();}, 3000); }
+    console.log('Auto-publish fallito:', e.message);
+  });
+}
 (function init() {
   applyCSS();
   document.getElementById('p-prev').innerHTML = '<div class="pl" style="text-align:center;padding:40px;font-family:monospace;font-size:12px;color:#c9a227;letter-spacing:2px">CARICAMENTO...</div>';
