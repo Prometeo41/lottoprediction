@@ -818,6 +818,7 @@ function checkAdmin() {
   if (!pwd) return;
   if (pwd.value === ADMIN_PASS) {
     isAdminLogged = true;
+    localStorage.setItem('lotto_admin_session','1');
     closeAdmin();
     openAdminPanel();
   } else {
@@ -933,7 +934,11 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ── FUNZIONI PREMIUM (definite subito per evitare errori) ─────────────────
-function isPremium(){return localStorage.getItem('lotto_premium')==='YES';}
+function isPremium(){
+  if (isAdminLogged) return true;
+  if (localStorage.getItem('lotto_admin_session')==='1') return true;
+  return localStorage.getItem('lotto_premium')==='YES';
+}
 function premiumBadge(){
   return isPremium()
     ? '<span style="background:linear-gradient(135deg,#c9a227,#f0c040);color:#06060e;border-radius:4px;padding:2px 7px;font-family:monospace;font-size:9px;font-weight:700;margin-left:6px">PREMIUM</span>'
@@ -2437,6 +2442,9 @@ function autoPublishToGitHub(added) {
   });
 }
 (function init() {
+  // Ripristina sessione admin se già loggato in precedenza
+  if (localStorage.getItem('lotto_admin_session')==='1') { isAdminLogged = true; }
+
   applyCSS();
   document.getElementById('p-prev').innerHTML = '<div class="pl" style="text-align:center;padding:40px;font-family:monospace;font-size:12px;color:#c9a227;letter-spacing:2px">CARICAMENTO...</div>';
 
