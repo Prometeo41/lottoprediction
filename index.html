@@ -2445,21 +2445,32 @@ function autoPublishToGitHub(added) {
 
 // ── VERIFICA GIOCATA ─────────────────────────────────────────────────────────
 function initVerificaGiocata() {
-  var sel = document.getElementById('vg-data');
-  if (!sel) return;
-  sel.innerHTML = '';
-  // Prende le ultime 20 date uniche
+  var input = document.getElementById('vg-data');
+  var shortcuts = document.getElementById('vg-data-shortcuts');
+  if (!input || !shortcuts) return;
+
+  // Imposta data di oggi come default
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2,'0');
+  var mm = String(today.getMonth()+1).padStart(2,'0');
+  var yyyy = today.getFullYear();
+  input.value = dd + '/' + mm + '/' + yyyy;
+
+  // Shortcuts: ultime 8 date disponibili nei dati
+  shortcuts.innerHTML = '';
   var dates = [];
   var seen = {};
   for (var i = allDraws.length-1; i >= 0; i--) {
     var d = allDraws[i].date;
     if (!seen[d]) { seen[d]=1; dates.push(d); }
-    if (dates.length >= 20) break;
+    if (dates.length >= 8) break;
   }
   dates.forEach(function(d) {
-    var opt = document.createElement('option');
-    opt.value = d; opt.textContent = d;
-    sel.appendChild(opt);
+    var btn = document.createElement('button');
+    btn.textContent = d;
+    btn.style.cssText = 'background:#0d0d1c;border:1px solid #333350;color:#9999bb;padding:3px 7px;border-radius:4px;font-family:monospace;font-size:9px;cursor:pointer';
+    btn.onclick = function(){ document.getElementById('vg-data').value = d; };
+    shortcuts.appendChild(btn);
   });
 }
 
@@ -2468,7 +2479,7 @@ function verificaGiocata() {
   var numsRaw = document.getElementById('vg-nums').value;
   var tipo    = document.getElementById('vg-tipo').value;
   var puntata = parseFloat(document.getElementById('vg-puntata').value) || 1;
-  var data    = document.getElementById('vg-data').value;
+  var data    = document.getElementById('vg-data').value.trim();
   var result  = document.getElementById('vg-result');
 
   // Parse numeri
@@ -2695,8 +2706,9 @@ function verificaGiocata() {
         </div>
       </div>
       <div style="margin-bottom:10px">
-        <label style="font-size:10px;color:#9999bb;font-family:monospace">DATA ESTRAZIONE</label>
-        <select id="vg-data" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px"></select>
+        <label style="font-size:10px;color:#9999bb;font-family:monospace">DATA ESTRAZIONE (GG/MM/AAAA)</label>
+        <input id="vg-data" type="text" placeholder="es: 10/06/2026" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:8px;border-radius:6px;font-family:monospace;font-size:13px;margin-top:3px;box-sizing:border-box">
+        <div id="vg-data-shortcuts" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:5px"></div>
       </div>
       <button onclick="verificaGiocata()" style="width:100%;background:linear-gradient(135deg,#c9a227,#a07d1a);border:none;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer;color:#000;margin-bottom:8px">&#128269; VERIFICA VINCITA</button>
       <div id="vg-result" style="display:none;border-radius:8px;padding:12px;text-align:center;font-family:monospace"></div>
