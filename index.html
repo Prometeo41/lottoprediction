@@ -326,6 +326,41 @@ async function getLog() {
         </div>
       </div>
       <div style="background:#0d0d1c;border:1px solid rgba(230,57,70,.2);border-radius:12px;padding:20px">
+    <div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:10px">&#127922; VERIFICA GIOCATA</div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:10px;color:#9999bb;font-family:monospace">RUOTA</label>
+        <select id="vg-ruota" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px">
+          <option>Bari</option><option>Cagliari</option><option>Firenze</option><option>Genova</option><option>Milano</option><option>Napoli</option><option>Palermo</option><option>Roma</option><option>Torino</option><option>Venezia</option><option>Nazionale</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:10px;color:#9999bb;font-family:monospace">NUMERI GIOCATI (separati da spazio)</label>
+        <input id="vg-nums" type="text" placeholder="es: 9 10 66 67 71" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:8px;border-radius:6px;font-family:monospace;font-size:13px;margin-top:3px;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1">
+          <label style="font-size:10px;color:#9999bb;font-family:monospace">TIPO</label>
+          <select id="vg-tipo" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px">
+            <option value="estratto">Estratto</option>
+            <option value="ambo" selected>Ambo</option>
+            <option value="terno">Terno</option>
+            <option value="quaterna">Quaterna</option>
+            <option value="cinquina">Cinquina</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <label style="font-size:10px;color:#9999bb;font-family:monospace">PUNTATA €</label>
+          <input id="vg-puntata" type="number" value="1" min="0.5" step="0.5" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:8px;border-radius:6px;font-family:monospace;font-size:13px;margin-top:3px;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:10px;color:#9999bb;font-family:monospace">DATA ESTRAZIONE</label>
+        <select id="vg-data" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px"></select>
+      </div>
+      <button onclick="verificaGiocata()" style="width:100%;background:linear-gradient(135deg,#c9a227,#a07d1a);border:none;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer;color:#000;margin-bottom:8px">&#128269; VERIFICA VINCITA</button>
+      <div id="vg-result" style="display:none;border-radius:8px;padding:12px;text-align:center;font-family:monospace"></div>
+    </div>
         <div style="font-family:monospace;font-size:10px;color:#e63946;letter-spacing:2px;margin-bottom:10px">ZONA PERICOLO</div>
         <button onclick="gestClearLog()" style="background:transparent;border:1px solid #e63946;color:#e63946;border-radius:8px;padding:9px 18px;font-family:monospace;font-size:10px;cursor:pointer;margin-right:8px">
           Cancella log locale
@@ -830,6 +865,7 @@ function checkAdmin() {
 }
 
 function openAdminPanel() {
+  setTimeout(initVerificaGiocata, 300);
   var o = document.getElementById('adminp-overlay');
   if (!o) return;
   o.style.display = 'flex';
@@ -2441,6 +2477,114 @@ function autoPublishToGitHub(added) {
     console.log('Auto-publish fallito:', e.message);
   });
 }
+
+// ── VERIFICA GIOCATA ─────────────────────────────────────────────────────────
+function initVerificaGiocata() {
+  var sel = document.getElementById('vg-data');
+  if (!sel) return;
+  sel.innerHTML = '';
+  // Prende le ultime 20 date uniche
+  var dates = [];
+  var seen = {};
+  for (var i = allDraws.length-1; i >= 0; i--) {
+    var d = allDraws[i].date;
+    if (!seen[d]) { seen[d]=1; dates.push(d); }
+    if (dates.length >= 20) break;
+  }
+  dates.forEach(function(d) {
+    var opt = document.createElement('option');
+    opt.value = d; opt.textContent = d;
+    sel.appendChild(opt);
+  });
+}
+
+function verificaGiocata() {
+  var ruota   = document.getElementById('vg-ruota').value;
+  var numsRaw = document.getElementById('vg-nums').value;
+  var tipo    = document.getElementById('vg-tipo').value;
+  var puntata = parseFloat(document.getElementById('vg-puntata').value) || 1;
+  var data    = document.getElementById('vg-data').value;
+  var result  = document.getElementById('vg-result');
+
+  // Parse numeri
+  var played = numsRaw.split(/[,\s]+/).map(function(n){ return parseInt(n.trim()); })
+                       .filter(function(n){ return n >= 1 && n <= 90; });
+
+  if (!played.length) { alert('Inserisci i numeri giocati!'); return; }
+
+  // Trova l'estrazione
+  var estrazione = allDraws.filter(function(d) {
+    return d.date === data && d.ruota && d.ruota.toLowerCase() === ruota.toLowerCase();
+  });
+
+  if (!estrazione.length) {
+    result.style.display = 'block';
+    result.style.background = 'rgba(230,57,70,.1)';
+    result.style.border = '1px solid rgba(230,57,70,.3)';
+    result.innerHTML = '<div style="color:#e63946;font-size:12px">❌ Nessuna estrazione trovata per ' + ruota + ' del ' + data + '</div>';
+    return;
+  }
+
+  var usciti = estrazione[0].nums;
+  var match = played.filter(function(n){ return usciti.indexOf(n) !== -1; });
+
+  // Moltiplicatori ufficiali per €1
+  var molt = { estratto: 11.23, ambo: 250, terno: 4500, quaterna: 120000, cinquina: 6000000 };
+
+  // Conta combinazioni vincenti
+  function combinazioni(arr, k) {
+    if (k === 0) return [[]];
+    if (arr.length < k) return [];
+    var first = arr[0], rest = arr.slice(1);
+    var withFirst = combinazioni(rest, k-1).map(function(c){ return [first].concat(c); });
+    var withoutFirst = combinazioni(rest, k);
+    return withFirst.concat(withoutFirst);
+  }
+
+  var tipoMap = { estratto:1, ambo:2, terno:3, quaterna:4, cinquina:5 };
+  var k = tipoMap[tipo];
+  var vincite = 0;
+  var combVincenti = 0;
+
+  if (tipo === 'estratto') {
+    combVincenti = match.length;
+    vincite = combVincenti * molt.estratto * puntata;
+  } else {
+    // Conta quante combinazioni vincenti tra i numeri giocati
+    var combGiocate = combinazioni(played, k);
+    combGiocate.forEach(function(c) {
+      if (c.every(function(n){ return match.indexOf(n) !== -1; })) {
+        combVincenti++;
+        vincite += molt[tipo] * puntata;
+      }
+    });
+  }
+
+  result.style.display = 'block';
+
+  if (vincite > 0) {
+    result.style.background = 'rgba(87,204,153,.1)';
+    result.style.border = '1px solid rgba(87,204,153,.4)';
+    result.innerHTML = 
+      '<div style="font-size:20px;margin-bottom:6px">🎉</div>' +
+      '<div style="color:#57cc99;font-size:14px;font-weight:700;margin-bottom:6px">HAI VINTO!</div>' +
+      '<div style="color:#e8e8f0;font-size:12px;margin-bottom:4px">Numeri usciti su ' + ruota + ': <strong>' + usciti.join(' - ') + '</strong></div>' +
+      '<div style="color:#57cc99;font-size:12px;margin-bottom:4px">Tuoi numeri centrati: <strong>' + match.join(' - ') + '</strong> (' + match.length + ' su ' + played.length + ')</div>' +
+      '<div style="color:#c9a227;font-size:12px;margin-bottom:8px">Combinazioni vincenti: <strong>' + combVincenti + '</strong></div>' +
+      '<div style="color:#c9a227;font-size:22px;font-weight:700">€ ' + vincite.toFixed(2) + '</div>' +
+      '<div style="color:#9999bb;font-size:10px;margin-top:4px">Puntata: €' + puntata.toFixed(2) + ' | Netto: €' + (vincite - puntata * (tipo==='estratto'?played.length : combinazioni(played,k).length)).toFixed(2) + '</div>';
+  } else {
+    result.style.background = 'rgba(230,57,70,.08)';
+    result.style.border = '1px solid rgba(230,57,70,.2)';
+    result.innerHTML =
+      '<div style="font-size:18px;margin-bottom:6px">😔</div>' +
+      '<div style="color:#e63946;font-size:13px;font-weight:700;margin-bottom:6px">Non hai vinto questa volta</div>' +
+      '<div style="color:#e8e8f0;font-size:12px;margin-bottom:4px">Numeri usciti su ' + ruota + ': <strong>' + usciti.join(' - ') + '</strong></div>' +
+      '<div style="color:#9999bb;font-size:11px">Tuoi numeri: ' + played.join(' - ') + '<br>Centrati: ' + (match.length ? match.join(', ') : 'nessuno') + '</div>';
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 (function init() {
   // Ripristina sessione admin se già loggato in precedenza
   if (localStorage.getItem('lotto_admin_session')==='1') { isAdminLogged = true; }
