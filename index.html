@@ -2507,6 +2507,13 @@ function verificaGiocata() {
   // Moltiplicatori ufficiali per €1
   var molt = { estratto: 11.23, ambo: 250, terno: 4500, quaterna: 120000, cinquina: 6000000 };
 
+  // Calcolo vincita netta con tassazione italiana (Legge 160/2019)
+  // Franchigia €25, aliquota 8% sull'eccedenza
+  function netto(lordo) {
+    if (lordo <= 25) return lordo;
+    return lordo - (lordo - 25) * 0.08;
+  }
+
   // Conta combinazioni vincenti
   function combinazioni(arr, k) {
     if (k === 0) return [[]];
@@ -2524,14 +2531,14 @@ function verificaGiocata() {
 
   if (tipo === 'estratto') {
     combVincenti = match.length;
-    vincite = combVincenti * molt.estratto * puntata;
+    vincite = netto(combVincenti * molt.estratto * puntata);
   } else {
     // Conta quante combinazioni vincenti tra i numeri giocati
     var combGiocate = combinazioni(played, k);
     combGiocate.forEach(function(c) {
       if (c.every(function(n){ return match.indexOf(n) !== -1; })) {
         combVincenti++;
-        vincite += molt[tipo] * puntata;
+        vincite += netto(molt[tipo] * puntata);
       }
     });
   }
@@ -2547,7 +2554,8 @@ function verificaGiocata() {
       '<div style="color:#e8e8f0;font-size:12px;margin-bottom:4px">Numeri usciti su ' + ruota + ': <strong>' + usciti.join(' - ') + '</strong></div>' +
       '<div style="color:#57cc99;font-size:12px;margin-bottom:4px">Tuoi numeri centrati: <strong>' + match.join(' - ') + '</strong> (' + match.length + ' su ' + played.length + ')</div>' +
       '<div style="color:#c9a227;font-size:12px;margin-bottom:8px">Combinazioni vincenti: <strong>' + combVincenti + '</strong></div>' +
-      '<div style="color:#c9a227;font-size:22px;font-weight:700">€ ' + vincite.toFixed(2) + '</div>' +
+      '<div style="color:#c9a227;font-size:22px;font-weight:700">€ ' + vincite.toFixed(2) + ' <span style="font-size:11px;color:#9999bb">(netto)</span></div>' +
+      '<div style="color:#555570;font-size:10px;margin-top:2px">Lordo: €' + (vincite / 0.92 > vincite + 2 ? (vincite + (vincite-25)*0.08/0.92).toFixed(2) : vincite.toFixed(2)) + ' · Tassa 8% su eccedenza €25</div>' +
       '<div style="color:#9999bb;font-size:10px;margin-top:4px">Puntata: €' + puntata.toFixed(2) + ' | Netto: €' + (vincite - puntata * (tipo==='estratto'?played.length : combinazioni(played,k).length)).toFixed(2) + '</div>';
   } else {
     result.style.background = 'rgba(230,57,70,.08)';
