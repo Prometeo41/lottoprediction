@@ -326,41 +326,6 @@ async function getLog() {
         </div>
       </div>
       <div style="background:#0d0d1c;border:1px solid rgba(230,57,70,.2);border-radius:12px;padding:20px">
-    <div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:14px;margin-bottom:10px">
-      <div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:10px">&#127922; VERIFICA GIOCATA</div>
-      <div style="margin-bottom:8px">
-        <label style="font-size:10px;color:#9999bb;font-family:monospace">RUOTA</label>
-        <select id="vg-ruota" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px">
-          <option>Bari</option><option>Cagliari</option><option>Firenze</option><option>Genova</option><option>Milano</option><option>Napoli</option><option>Palermo</option><option>Roma</option><option>Torino</option><option>Venezia</option><option>Nazionale</option>
-        </select>
-      </div>
-      <div style="margin-bottom:8px">
-        <label style="font-size:10px;color:#9999bb;font-family:monospace">NUMERI GIOCATI (separati da spazio)</label>
-        <input id="vg-nums" type="text" placeholder="es: 9 10 66 67 71" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:8px;border-radius:6px;font-family:monospace;font-size:13px;margin-top:3px;box-sizing:border-box">
-      </div>
-      <div style="display:flex;gap:8px;margin-bottom:8px">
-        <div style="flex:1">
-          <label style="font-size:10px;color:#9999bb;font-family:monospace">TIPO</label>
-          <select id="vg-tipo" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px">
-            <option value="estratto">Estratto</option>
-            <option value="ambo" selected>Ambo</option>
-            <option value="terno">Terno</option>
-            <option value="quaterna">Quaterna</option>
-            <option value="cinquina">Cinquina</option>
-          </select>
-        </div>
-        <div style="flex:1">
-          <label style="font-size:10px;color:#9999bb;font-family:monospace">PUNTATA €</label>
-          <input id="vg-puntata" type="number" value="1" min="0.5" step="0.5" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:8px;border-radius:6px;font-family:monospace;font-size:13px;margin-top:3px;box-sizing:border-box">
-        </div>
-      </div>
-      <div style="margin-bottom:10px">
-        <label style="font-size:10px;color:#9999bb;font-family:monospace">DATA ESTRAZIONE</label>
-        <select id="vg-data" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px"></select>
-      </div>
-      <button onclick="verificaGiocata()" style="width:100%;background:linear-gradient(135deg,#c9a227,#a07d1a);border:none;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer;color:#000;margin-bottom:8px">&#128269; VERIFICA VINCITA</button>
-      <div id="vg-result" style="display:none;border-radius:8px;padding:12px;text-align:center;font-family:monospace"></div>
-    </div>
         <div style="font-family:monospace;font-size:10px;color:#e63946;letter-spacing:2px;margin-bottom:10px">ZONA PERICOLO</div>
         <button onclick="gestClearLog()" style="background:transparent;border:1px solid #e63946;color:#e63946;border-radius:8px;padding:9px 18px;font-family:monospace;font-size:10px;cursor:pointer;margin-right:8px">
           Cancella log locale
@@ -2701,6 +2666,41 @@ function verificaGiocata() {
       <div id="admin-premium-btn"></div>
     </div>
     <div style="background:rgba(230,57,70,.06);border:1px solid rgba(230,57,70,.2);border-radius:10px;padding:12px">
+    <div style="background:#09091a;border:1px solid #1c1c2e;border-radius:10px;padding:14px;margin-bottom:10px">
+      <div style="font-family:monospace;font-size:9px;color:#c9a227;letter-spacing:2px;margin-bottom:10px">&#127922; VERIFICA GIOCATA</div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:10px;color:#9999bb;font-family:monospace">RUOTA</label>
+        <select id="vg-ruota" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px">
+          <option>Bari</option><option>Cagliari</option><option>Firenze</option><option>Genova</option><option>Milano</option><option>Napoli</option><option>Palermo</option><option>Roma</option><option>Torino</option><option>Venezia</option><option>Nazionale</option>
+        </select>
+      </div>
+      <div style="margin-bottom:8px">
+        <label style="font-size:10px;color:#9999bb;font-family:monospace">NUMERI GIOCATI (separati da spazio)</label>
+        <input id="vg-nums" type="text" placeholder="es: 9 10 66 67 71" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:8px;border-radius:6px;font-family:monospace;font-size:13px;margin-top:3px;box-sizing:border-box">
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <div style="flex:1">
+          <label style="font-size:10px;color:#9999bb;font-family:monospace">TIPO</label>
+          <select id="vg-tipo" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px">
+            <option value="estratto">Estratto</option>
+            <option value="ambo" selected>Ambo</option>
+            <option value="terno">Terno</option>
+            <option value="quaterna">Quaterna</option>
+            <option value="cinquina">Cinquina</option>
+          </select>
+        </div>
+        <div style="flex:1">
+          <label style="font-size:10px;color:#9999bb;font-family:monospace">PUNTATA €</label>
+          <input id="vg-puntata" type="number" value="1" min="0.5" step="0.5" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:8px;border-radius:6px;font-family:monospace;font-size:13px;margin-top:3px;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:10px;color:#9999bb;font-family:monospace">DATA ESTRAZIONE</label>
+        <select id="vg-data" style="width:100%;background:#0d0d1c;border:1px solid #333350;color:#e8e8f0;padding:6px;border-radius:6px;font-family:monospace;font-size:11px;margin-top:3px"></select>
+      </div>
+      <button onclick="verificaGiocata()" style="width:100%;background:linear-gradient(135deg,#c9a227,#a07d1a);border:none;border-radius:8px;padding:10px;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer;color:#000;margin-bottom:8px">&#128269; VERIFICA VINCITA</button>
+      <div id="vg-result" style="display:none;border-radius:8px;padding:12px;text-align:center;font-family:monospace"></div>
+    </div>
       <div style="font-family:monospace;font-size:9px;color:#e63946;letter-spacing:2px;margin-bottom:8px">ZONA PERICOLO</div>
       <button onclick="adminClearAll()" class="bgh" style="width:100%;color:#e63946;border-color:#e63946">&#128465; Cancella tutti i dati</button>
     </div>
