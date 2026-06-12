@@ -2582,6 +2582,70 @@ function verificaGiocata() {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+
+// ── SYNC DA GITHUB ───────────────────────────────────────────────────────────
+function syncFromGitHub() {
+  var banner = document.createElement('div');
+  banner.id = 'sync-banner';
+  banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#0d1a0d;border-top:1px solid #57cc99;padding:8px 16px;font-family:monospace;font-size:11px;color:#57cc99;z-index:999;text-align:center';
+  banner.textContent = '🔄 Controllo aggiornamenti...';
+  document.body.appendChild(banner);
+
+  fetch('https://raw.githubusercontent.com/Prometeo41/lottoprediction/main/data/latest.json?t=' + Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(json){
+      var remoteDr = json.draws || [];
+      if (!remoteDr.length) { removeBanner(); return; }
+
+      // Trova ultima data locale e remota
+      function lastDate(draws) {
+        var d = null;
+        for (var i=0; i<draws.length; i++) {
+          var p = parseItalianDate(draws[i].date);
+          if (!d || (p && p > d)) d = p;
+        }
+        return d;
+      }
+
+      var localLast  = lastDate(allDraws);
+      var remoteLast = lastDate(remoteDr);
+
+      if (!remoteLast || (localLast && remoteLast <= localLast)) {
+        // GitHub non ha niente di nuovo - prova auto-fetch dal web
+        removeBanner();
+        setTimeout(function(){ autoFetchNewDraws(); }, 500);
+        return;
+      }
+
+      // GitHub ha dati più recenti — scarica e unisci
+      banner.textContent = '⬇️ Scarico dati aggiornati da GitHub...';
+      var seen = {};
+      for (var i=0; i<allDraws.length; i++) {
+        seen[allDraws[i].date+'|'+allDraws[i].ruota] = 1;
+      }
+      var newOnes = remoteDr.filter(function(d){
+        return !seen[d.date+'|'+d.ruota];
+      });
+
+      if (!newOnes.length) { removeBanner(); return; }
+
+      dbSaveAll(newOnes).then(function(){ return dbGetAll(); }).then(function(rows){
+        allDraws = rows;
+        renderAll();
+        banner.textContent = '✅ Dati aggiornati! +' + newOnes.length + ' nuove estrazioni.';
+        setTimeout(removeBanner, 3000);
+      });
+    })
+    .catch(function(){ removeBanner(); });
+}
+
+function removeBanner() {
+  var b = document.getElementById('sync-banner');
+  if (b) b.remove();
+  var b2 = document.getElementById('auto-update-banner');
+  if (b2) b2.remove();
+}
+// ─────────────────────────────────────────────────────────────────────────────
 (function init() {
   // Ripristina sessione admin se già loggato in precedenza
   if (localStorage.getItem('lotto_admin_session')==='1') { isAdminLogged = true; }
@@ -2634,8 +2698,8 @@ function verificaGiocata() {
     }
   }).then(function() {
     renderAll();
-    // Auto-fetch nuove estrazioni se necessario
-    setTimeout(function() { autoFetchNewDraws(); }, 1500);
+    // Controlla sempre se GitHub ha dati più aggiornati
+    setTimeout(function() { syncFromGitHub(); }, 1000);
   // Mostra schermata benvenuto se prima visita
   if (!localStorage.getItem('lotto_visited')) {
     localStorage.setItem('lotto_visited','1');
