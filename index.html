@@ -2610,29 +2610,31 @@ function syncFromGitHub() {
       var localLast  = lastDate(allDraws);
       var remoteLast = lastDate(remoteDr);
 
-      if (!remoteLast || (localLast && remoteLast <= localLast)) {
-        // GitHub non ha niente di nuovo - prova auto-fetch dal web
+      // Se GitHub ha molte più estrazioni (>100 di differenza) o dati locali sembrano sbagliati
+      // fa un refresh completo invece di solo aggiungere le nuove
+      var localCount = allDraws.length;
+      var remoteCount = remoteDr.length;
+      var needsFullRefresh = (remoteCount - localCount > 100) || 
+                             (!localLast) ||
+                             (remoteLast && localLast && remoteLast > localLast);
+
+      if (!needsFullRefresh) {
+        // Tutto ok, prova auto-fetch dal web per dati recentissimi
         removeBanner();
         setTimeout(function(){ autoFetchNewDraws(); }, 500);
         return;
       }
 
-      // GitHub ha dati più recenti — scarica e unisci
-      banner.textContent = '⬇️ Scarico dati aggiornati da GitHub...';
-      var seen = {};
-      for (var i=0; i<allDraws.length; i++) {
-        seen[allDraws[i].date+'|'+allDraws[i].ruota] = 1;
-      }
-      var newOnes = remoteDr.filter(function(d){
-        return !seen[d.date+'|'+d.ruota];
-      });
+      banner.textContent = '⬇️ Aggiorno dati da GitHub (' + remoteCount + ' estrazioni)...';
 
-      if (!newOnes.length) { removeBanner(); return; }
-
-      dbSaveAll(newOnes).then(function(){ return dbGetAll(); }).then(function(rows){
+      // Refresh completo: sostituisce tutti i dati con quelli di GitHub
+      dbClearAll().then(function(){
+        return dbSaveAll(remoteDr);
+      }).then(function(){ return dbGetAll(); }).then(function(rows){
         allDraws = rows;
         renderAll();
-        banner.textContent = '✅ Dati aggiornati! +' + newOnes.length + ' nuove estrazioni.';
+        var added = remoteCount - localCount;
+        banner.textContent = '✅ Dati aggiornati! ' + remoteCount + ' estrazioni totali.';
         setTimeout(removeBanner, 3000);
       });
     })
